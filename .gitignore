@@ -14,8 +14,7 @@ dncui-test-*
 *.o
 *.obj
 *.lst
-lib
+/lib/
+/bin/
 source/*
 !source/ncui
-lib
-bin
