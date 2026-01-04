@@ -1,0 +1,14 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"type": "code-d",
+			"request": "launch",
+			"name": "Debug example (task build)",
+			"preLaunchTask": "dub: build example (debug)",
+			"dubBuild": false,
+			"program": "${workspaceFolder}/bin/example",
+			"cwd": "${workspaceFolder}"
+		}
+	]
+}

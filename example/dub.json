@@ -1,0 +1,11 @@
+{
+	"name": "example",
+	"targetName": "example",
+	"targetType": "executable",
+	"targetPath": "../bin",
+	"dependencies": {
+		"ncui": {
+			"path": ".."
+		}
+	}
+}

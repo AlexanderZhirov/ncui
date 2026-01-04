@@ -1,0 +1,18 @@
+{
+	"name": "ncui",
+	"description": "Ncurses User Interface",
+	"license": "BSL-1.0",
+	"authors": [
+		"Alexander Zhirov"
+	],
+	"copyright": "Copyright © 2026, Alexander Zhirov",
+	"targetType": "library",
+	"targetPath": "lib",
+	"targetName": "ncui",
+	"dependencies": {
+		"ncurses": "~>1.0.0"
+	},
+	"subPackages": [
+		"example"
+	]
+}

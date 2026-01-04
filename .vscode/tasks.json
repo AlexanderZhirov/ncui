@@ -1,0 +1,19 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "dub: build example (debug)",
+			"type": "shell",
+			"command": "dub",
+			"args": [
+				"build",
+				":example",
+				"--build=debug"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": []
+		}
+	]
+}
