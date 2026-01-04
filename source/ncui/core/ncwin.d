@@ -6,10 +6,20 @@ struct NCWin
 {
 	WINDOW* _p;
 
-	this(WINDOW* p) { _p = p; }
+	this(WINDOW* p)
+	{
+		_p = p;
+	}
 
-	@property WINDOW* ptr() @trusted const { return cast(WINDOW*)_p; }
+	@property WINDOW* ptr()
+	{
+		return _p;
+	}
+
 	alias ptr this;
 
-	@property bool isNull() const { return _p is null; }
+	@property bool isNull() const
+	{
+		return _p is null;
+	}
 }
