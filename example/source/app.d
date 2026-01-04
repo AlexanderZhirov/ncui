@@ -4,5 +4,7 @@ import std.stdio : writeln;
 
 void main()
 {
-	writeln("test");
+	auto config = SessionConfig(InputMode.raw, Cursor.normal, Echo.on);
+	auto session = new Session(config);
+	session.close();
 }
