@@ -173,7 +173,7 @@ public:
 	{
 		// ncurses не должен быть инициализирован (false)
 		ncuiExpectMsg!cursesInitialized("ncurses is already initialized", false);
-		// Адекватное чтение юникода.
+		// Корректное чтение юникода.
 		setlocale(LC_ALL, "");
 		_root = NCWin(ncuiNotNull!initscr());
 
