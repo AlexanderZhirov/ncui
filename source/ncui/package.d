@@ -1,2 +1,3 @@
-module source.ncui;
+module ncui;
 
+public import ncui.core.session;
