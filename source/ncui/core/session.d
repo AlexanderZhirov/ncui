@@ -175,18 +175,20 @@ private:
 public:
 	this(const SessionConfig config)
 	{
+		// Если на этапе инициализации сработает проблема с конфигурированием сессии
+		scope (failure)
+		{
+			if (cursesInitialized()) {
+				endwin();
+				gInitialized = false;
+			}
+		}
+
 		// ncurses не должен быть инициализирован (false)
 		ncuiExpectMsg!cursesInitialized("ncurses is already initialized", false);
 		// Корректное чтение юникода.
 		setlocale(LC_ALL, "");
 		_root = NCWin(ncuiNotNull!initscr());
-
-		// Если на этапе инициализации сработает проблема с конфигурированием сессии
-		scope (failure)
-		{
-			endwin();
-			gInitialized = false;
-		}
 
 		// Установить флаг инициализации ncurses
 		gInitialized = true;
