@@ -123,12 +123,16 @@ struct SessionConfig
 	int escDelay = 50;
 }
 
+/**
+ * Терминальная сессия ncurses.
+ */
 final class Session
 {
 private:
 	NCWin _root;
 	bool _ended;
 
+	// Применяет параметры конфигурации к активной ncurses-сессии.
 	void setup(ref const(SessionConfig) config)
 	{
 		// Настройка режима обработки ввода терминалом.
@@ -186,6 +190,7 @@ public:
 
 		// Установить флаг инициализации ncurses
 		gInitialized = true;
+		// Применение конфигурации
 		setup(config);
 	}
 
