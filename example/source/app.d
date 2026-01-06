@@ -1,24 +1,13 @@
 import ncui;
 
-import std.stdio : writeln;
+import simple;
 
 void main()
 {
-	auto config = SessionConfig(InputMode.raw, Cursor.normal, Echo.on, Keypad.on);
-	Session session;
-	try {
-		session = new Session(config);
-	} catch (Exception e) {
-		writeln("Не удалось инициализировать сессию:\n\t", e.msg);
-		return;
-	}
-	
-	try {
-		session.close();
-	} catch (Exception e) {
-		writeln("Не удалось закрыть сессию:\n\t", e.msg);
-		return;
-	}
+	setLogLevel(LogLevel.info);
 
-	writeln("OK");
+	auto config = SessionConfig(InputMode.raw, Cursor.hidden, Echo.off, Keypad.on);
+	NCUI ncui = new NCUI(config);
+	auto window = new Simple();
+	ncui.run(window);
 }
