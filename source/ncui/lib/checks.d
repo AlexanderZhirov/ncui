@@ -1,6 +1,6 @@
 module ncui.lib.checks;
 
-import std.traits : isCallable, isPointer;
+import std.traits : isPointer;
 import std.exception : enforce;
 import std.format : format;
 
@@ -27,7 +27,7 @@ auto ncuiExpect(alias fn, Expected, Args...)(
 	size_t line = __LINE__,
 	string module_ = __MODULE__,
 	string function_ = __FUNCTION__
-) if (isCallable!fn && __traits(compiles, fn(args)))
+) if (__traits(compiles, fn(args)))
 {
 	auto result = fn(args);
 
@@ -56,7 +56,7 @@ auto ncuiExpectMsg(alias fn, Expected, Args...)(
 	size_t line = __LINE__,
 	string module_ = __MODULE__,
 	string function_ = __FUNCTION__
-) if (isCallable!fn && __traits(compiles, fn(args)))
+) if (__traits(compiles, fn(args)))
 {
 	auto result = fn(args);
 
@@ -83,7 +83,7 @@ int ncuiNotErr(alias fn, Args...)(
 	size_t line = __LINE__,
 	string module_ = __MODULE__,
 	string function_ = __FUNCTION__
-) if (isCallable!fn && __traits(compiles, fn(args)))
+) if (__traits(compiles, fn(args)))
 {
 	auto result = fn(args);
 
@@ -109,7 +109,7 @@ auto ncuiNotNull(alias fn, Args...)(
 	size_t line = __LINE__,
 	string module_ = __MODULE__,
 	string function_ = __FUNCTION__
-) if (isCallable!fn && __traits(compiles, fn(args)))
+) if (__traits(compiles, fn(args)))
 {
 	auto result = fn(args);
 
