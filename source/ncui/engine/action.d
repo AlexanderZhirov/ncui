@@ -66,6 +66,9 @@ struct ScreenAction
 	IScreen next;
 	// Результат (используется для `Pop`, `Quit`).
 	ScreenResult result;
+	// Количество извлекаемых экранов.
+	int popScreenCount;
+
 	/**
 	 * Ничего не делать.
 	 *
@@ -73,8 +76,9 @@ struct ScreenAction
 	 */
 	static ScreenAction none()
 	{
-		return ScreenAction(ActionKind.None, null, ScreenResult.none());
+		return ScreenAction(ActionKind.None, null, ScreenResult.none(), 0);
 	}
+
 	/**
 	 * Добавить новый экран поверх текущего.
 	 *
@@ -84,8 +88,9 @@ struct ScreenAction
 	static ScreenAction push(IScreen screen)
 	{
 		// assert(isPointer!(typeof(result)), "ncuiNotNull expects a function that returns a pointer.");
-		return ScreenAction(ActionKind.Push, screen, ScreenResult.none());
+		return ScreenAction(ActionKind.Push, screen, ScreenResult.none(), 0);
 	}
+
 	/**
 	 * Заменить верхний экран стека новым.
 	 *
@@ -94,8 +99,9 @@ struct ScreenAction
 	 */
 	static ScreenAction replace(IScreen screen)
 	{
-		return ScreenAction(ActionKind.Replace, screen, ScreenResult.none());
+		return ScreenAction(ActionKind.Replace, screen, ScreenResult.none(), 0);
 	}
+
 	/**
 	 * Закрыть верхний экран и передать результат родителю.
 	 *
@@ -104,8 +110,20 @@ struct ScreenAction
 	 */
 	static ScreenAction pop(ScreenResult result)
 	{
-		return ScreenAction(ActionKind.Pop, null, result);
+		return ScreenAction(ActionKind.Pop, null, result, 1);
 	}
+
+	/**
+	 * Закрыть верхний экран и передать результат родителю.
+	 *
+	 * Params:
+	 *  - result: результат закрываемого экрана.
+	 */
+	static ScreenAction popN(int count, ScreenResult result)
+	{
+		return ScreenAction(ActionKind.Pop, null, result, count < 1 ? 1 : count);
+	}
+
 	/**
 	 * Завершить UI-цикл и вернуть финальный результат наружу.
 	 *
@@ -114,6 +132,6 @@ struct ScreenAction
 	 */
 	static ScreenAction quit(ScreenResult result)
 	{
-		return ScreenAction(ActionKind.Quit, null, result);
+		return ScreenAction(ActionKind.Quit, null, result, 0);
 	}
 }

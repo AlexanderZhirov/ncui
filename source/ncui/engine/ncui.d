@@ -25,6 +25,19 @@ private:
 	// Конечный результат выполнения.
 	ScreenResult _result;
 
+	// Извлечение из стека указанное количество экранов.
+	void popMany(int screenCount)
+	{
+		if (screenCount < 1)
+			screenCount = 1;
+
+		for (int i = 0; i < screenCount && _stack.length != 0; ++i)
+		{
+			_stack[$ - 1].close();
+			_stack.popBack();
+		}
+	}
+
 	void apply(ScreenAction action)
 	{
 		while (_running && action.kind != ActionKind.None)
@@ -49,6 +62,28 @@ private:
 				break;
 
 			case ActionKind.Pop:
+				// Результат работы удаляемого экрана (дочерний экран).
+				// Позже он будет передан родительскому экрану.
+				auto childResult = action.result;
+				// Количество удаляемых экранов.
+				int screenCount = (action.popScreenCount <= 0) ? 1 : action.popScreenCount;
+				popMany(screenCount);
+				_session.clear();
+				if (_stack.length == 0)
+				{
+					_result = childResult;
+					_running = false;
+					return;
+				}
+				auto parent = _stack[$ - 1];
+				// Передача результата дочернего экрана первому экрану в стеке (родительскому экрану).
+				auto actionResult = parent.onChildResult(_context, childResult);
+				if (actionResult.kind != ActionKind.None)
+				{
+					action = actionResult;
+					break;
+				}
+				action = parent.onShow(_context);
 				break;
 
 			case ActionKind.Quit:
