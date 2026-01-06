@@ -208,6 +208,14 @@ public:
 		return KeyEvent(status, ch);
 	}
 
+	void clear()
+	{
+		// Очищает окно.
+		ncuiNotErr!erase();
+		// Обновляет экран, выводя содержимое виртуального экрана на физический.
+		ncuiNotErr!refresh();
+	}
+
 	void close()
 	{
 		if (_ended)
