@@ -100,16 +100,7 @@ private:
 public:
 	this(const SessionConfig config = SessionConfig.init)
 	{
-		try
-		{
-			_session = new Session(config);
-		}
-		catch (Exception e)
-		{
-			error("Failed to initialize the session: ", e.msg);
-			exit(EXIT_FAILURE);
-		}
-
+		_session = new Session(config);
 		_context = ScreenContext(_session);
 	}
 
@@ -134,9 +125,6 @@ public:
 
 		// Завершить сессию ncurses.
 		_session.close();
-
-		info("Engine successfully stopped");
-
 		return _result;
 	}
 }
