@@ -38,6 +38,24 @@ private:
 		}
 	}
 
+	// Проверить наличие тега у экрана.
+	int hasScreenTag(IScreen screen)
+	{
+		auto taggetScreen = cast(ITaggedScreen) screen;
+		// Пользовательский тег не должен быть равен int.min!
+		return (taggetScreen is null) ? int.min : taggetScreen.tag();
+	}
+
+	// Извлечение из стека экраны до указанного тега.
+	void popToTag(int targetTag)
+	{
+		while (_stack.length != 0 && hasScreenTag(_stack[$ - 1]) != targetTag)
+		{
+			_stack[$ - 1].close();
+			_stack.popBack();
+		}
+	}
+
 	void apply(ScreenAction action)
 	{
 		while (_running && action.kind != ActionKind.None)
@@ -68,6 +86,30 @@ private:
 				// Количество удаляемых экранов.
 				int screenCount = (action.popScreenCount <= 0) ? 1 : action.popScreenCount;
 				popMany(screenCount);
+				_session.clear();
+				if (_stack.length == 0)
+				{
+					_result = childResult;
+					_running = false;
+					return;
+				}
+				auto parent = _stack[$ - 1];
+				// Передача результата дочернего экрана первому экрану в стеке (родительскому экрану).
+				auto actionResult = parent.onChildResult(_context, childResult);
+				if (actionResult.kind != ActionKind.None)
+				{
+					action = actionResult;
+					break;
+				}
+				action = parent.onShow(_context);
+				break;
+
+			case ActionKind.PopTo:
+				// Результат работы удаляемого экрана (дочерний экран).
+				// Позже он будет передан родительскому экрану.
+				auto childResult = action.result;
+				// Удалить экраны до указанного тега.
+				popToTag(action.targetTag);
 				_session.clear();
 				if (_stack.length == 0)
 				{

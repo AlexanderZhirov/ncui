@@ -21,6 +21,8 @@ enum ActionKind
 	Replace,
 	// Удалить один или несколько экранов с вершины стека.
 	Pop,
+	// Удалить один или несколько экранов с вершины стека до указанного тега.
+	PopTo,
 	// Завершить выполнение UI-цикла.
 	Quit
 }
@@ -66,8 +68,10 @@ struct ScreenAction
 	IScreen next;
 	// Результат (используется для `Pop`, `Quit`).
 	ScreenResult result;
-	// Количество извлекаемых экранов.
+	// Количество удаляемых экранов.
 	int popScreenCount;
+	// Целевой тег экрана, до которого необходимо удалить экраны из стека.
+	int targetTag;
 
 	/**
 	 * Ничего не делать.
@@ -76,7 +80,7 @@ struct ScreenAction
 	 */
 	static ScreenAction none()
 	{
-		return ScreenAction(ActionKind.None, null, ScreenResult.none(), 0);
+		return ScreenAction(ActionKind.None, null, ScreenResult.none(), 0, 0);
 	}
 
 	/**
@@ -88,7 +92,7 @@ struct ScreenAction
 	static ScreenAction push(IScreen screen)
 	{
 		// assert(isPointer!(typeof(result)), "ncuiNotNull expects a function that returns a pointer.");
-		return ScreenAction(ActionKind.Push, screen, ScreenResult.none(), 0);
+		return ScreenAction(ActionKind.Push, screen, ScreenResult.none(), 0, 0);
 	}
 
 	/**
@@ -99,7 +103,7 @@ struct ScreenAction
 	 */
 	static ScreenAction replace(IScreen screen)
 	{
-		return ScreenAction(ActionKind.Replace, screen, ScreenResult.none(), 0);
+		return ScreenAction(ActionKind.Replace, screen, ScreenResult.none(), 0, 0);
 	}
 
 	/**
@@ -110,7 +114,7 @@ struct ScreenAction
 	 */
 	static ScreenAction pop(ScreenResult result)
 	{
-		return ScreenAction(ActionKind.Pop, null, result, 1);
+		return ScreenAction(ActionKind.Pop, null, result, 1, 0);
 	}
 
 	/**
@@ -121,7 +125,19 @@ struct ScreenAction
 	 */
 	static ScreenAction popN(int count, ScreenResult result)
 	{
-		return ScreenAction(ActionKind.Pop, null, result, count < 1 ? 1 : count);
+		return ScreenAction(ActionKind.Pop, null, result, count < 1 ? 1 : count, 0);
+	}
+
+	/**
+	* Закрыть экраны до экрана с указанным тегом и передать ему результат.
+	*
+	* Params:
+	*  - tag: целевой тег.
+	*  - result: результат закрываемого экрана.
+	*/
+	static ScreenAction popTo(int targetTag, ScreenResult result)
+	{
+		return ScreenAction(ActionKind.PopTo, null, result, 0, targetTag);
 	}
 
 	/**
@@ -132,6 +148,6 @@ struct ScreenAction
 	 */
 	static ScreenAction quit(ScreenResult result)
 	{
-		return ScreenAction(ActionKind.Quit, null, result, 0);
+		return ScreenAction(ActionKind.Quit, null, result, 0, 0);
 	}
 }

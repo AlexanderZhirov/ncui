@@ -51,6 +51,12 @@ interface IScreen
 	void close();
 }
 
+// Интерфейс тега экрана.
+interface ITaggedScreen
+{
+	int tag();
+}
+
 abstract class ScreenBase : IScreen
 {
 protected:
