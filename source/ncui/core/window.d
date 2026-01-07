@@ -2,6 +2,9 @@ module ncui.core.window;
 
 import deimos.ncurses;
 
+import std.string : toStringz;
+import std.conv : to;
+
 import ncui.core.ncwin;
 import ncui.lib.checks;
 
@@ -15,6 +18,7 @@ public:
 	this(int h, int w, int y, int x)
 	{
 		_window = ncuiNotNull!newwin(h, w, y, x);
+		ncuiNotErr!keypad(_window, true);
 	}
 
 	int height()
@@ -40,6 +44,10 @@ public:
 	void refresh()
 	{
 		ncuiNotErr!wrefresh(_window);
+	}
+
+	void put(int y, int x, string s) {
+		ncuiNotErr!mvwaddnstr(_window, y, x, s.toStringz, s.length.to!int);
 	}
 
 	@property NCWin handle()
