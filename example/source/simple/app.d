@@ -16,10 +16,14 @@ final class Simple : ScreenBase
 			_window.close();
 		}
 
-		_window = new Window(height / 2, width / 2, 0, 0);
+		_window = new Window(height, width, 0, 0);
 		_window.erase();
 
 		_window.border();
+
+		string title = "Для выхода нажать ESC";
+
+		_window.put(height / 2, width / 2 - cast(int) title.length / 2, title);
 
 		_window.refresh();
 
