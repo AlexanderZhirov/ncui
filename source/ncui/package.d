@@ -10,6 +10,7 @@ public import ncui.core.window;
 public import ncui.engine.ncui;
 public import ncui.engine.action;
 public import ncui.engine.screen;
+public import ncui.engine.basescreen;
 
 // Вспомогательная библиотека
 public import ncui.lib.logger;

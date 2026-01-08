@@ -56,37 +56,3 @@ interface ITaggedScreen
 {
 	int tag();
 }
-
-abstract class ScreenBase : IScreen
-{
-protected:
-	Window _window;
-
-public:
-	override NCWin inputWindow()
-	{
-		return _window.handle();
-	}
-
-	override ScreenAction onShow(ScreenContext context)
-	{
-		return ScreenAction.none();
-	}
-
-	override ScreenAction onChildResult(ScreenContext context, ScreenResult child)
-	{
-		return ScreenAction.none();
-	}
-
-	override ScreenAction handle(ScreenContext context, KeyEvent event)
-	{
-		return ScreenAction.none();
-	}
-
-	override void close()
-	{
-		if (_window !is null)
-			_window.close();
-		_window = null;
-	}
-}
