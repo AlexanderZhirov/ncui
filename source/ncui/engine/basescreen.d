@@ -16,7 +16,7 @@ protected:
 
 	void ensureWindow(ScreenContext context);
 	void build(ScreenContext context, Window window, WidgetContainer ui);
-	void layout(ScreenContext ctx, Window w, WidgetContainer ui)
+	void layout(ScreenContext context, Window window, WidgetContainer ui)
 	{
 	}
 

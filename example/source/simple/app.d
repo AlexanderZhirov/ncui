@@ -14,7 +14,7 @@ final class Simple : ScreenBase
 		_window = new Window(height, width, 0, 0);
 	}
 
-	override void layout(ScreenContext ctx, Window w, WidgetContainer ui)
+	override void layout(ScreenContext context, Window window, WidgetContainer ui)
 	{
 		_window.border();
 		_window.put(1, 2, "Пример простого скрина с кнопками");
