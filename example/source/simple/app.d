@@ -6,31 +6,30 @@ import deimos.ncurses;
 
 final class Simple : ScreenBase
 {
-	override ScreenAction onShow(ScreenContext context)
+	override void ensureWindow(ScreenContext context)
 	{
 		int height = getmaxy(context.session.root());
 		int width = getmaxx(context.session.root());
 
-		if (_window !is null)
-		{
-			_window.close();
-		}
-
 		_window = new Window(height, width, 0, 0);
-		_window.erase();
-
-		_window.border();
-
-		string title = "Для выхода нажать ESC";
-
-		_window.put(height / 2, width / 2 - cast(int) title.length / 2, title);
-
-		_window.refresh();
-
-		return ScreenAction.none();
 	}
 
-	override ScreenAction handle(ScreenContext context, KeyEvent event)
+	override void layout(ScreenContext ctx, Window w, WidgetContainer ui)
+	{
+		_window.border();
+		_window.put(1, 2, "Пример простого скрина с кнопками");
+	}
+
+	override void build(ScreenContext context, Window window, WidgetContainer ui)
+	{
+		auto okBtn = new Button(3, 2, "OK");
+		auto cancelBtn = new Button(3, 9, "Cancel", () => ScreenAction.quit(ScreenResult.none()));
+
+		_ui.add(okBtn);
+		_ui.add(cancelBtn);
+	}
+
+	override ScreenAction handleGlobal(ScreenContext context, KeyEvent event)
 	{
 		if (event.status == ERR)
 		{
@@ -39,7 +38,8 @@ final class Simple : ScreenBase
 
 		if (event.isChar)
 		{
-			if (event.ch == 27) {
+			if (event.ch == 27)
+			{
 				return ScreenAction.quit(ScreenResult.none());
 			}
 		}
