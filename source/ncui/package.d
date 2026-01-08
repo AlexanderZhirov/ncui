@@ -13,3 +13,7 @@ public import ncui.engine.screen;
 
 // Вспомогательная библиотека
 public import ncui.lib.logger;
+
+// Виджеты
+public import ncui.widgets.container;
+public import ncui.widgets.button;
