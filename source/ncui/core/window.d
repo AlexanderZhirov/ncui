@@ -46,7 +46,13 @@ public:
 		ncuiNotErr!wrefresh(_window);
 	}
 
-	void put(int y, int x, string s) {
+	void noutrefresh()
+	{
+		ncuiNotErr!wnoutrefresh(_window);
+	}
+
+	void put(int y, int x, string s)
+	{
 		ncuiNotErr!mvwaddnstr(_window, y, x, s.toStringz, s.length.to!int);
 	}
 
