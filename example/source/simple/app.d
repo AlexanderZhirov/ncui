@@ -25,8 +25,13 @@ final class Simple : ScreenBase
 		auto okBtn = new Button(3, 2, "OK", () => ScreenAction.push(new Simple()));
 		auto cancelBtn = new Button(3, 9, "Cancel", () => ScreenAction.pop(ScreenResult.none()));
 
+		auto disableOk = new Checkbox(4, 2,"Disable OK", false, (checked) {
+			okBtn.setEnabled(!checked);
+		});
+
 		_ui.add(okBtn);
 		_ui.add(cancelBtn);
+		_ui.add(disableOk);
 	}
 
 	override ScreenAction handleGlobal(ScreenContext context, KeyEvent event)
