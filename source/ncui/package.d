@@ -18,3 +18,4 @@ public import ncui.lib.logger;
 // Виджеты
 public import ncui.widgets.container;
 public import ncui.widgets.button;
+public import ncui.widgets.checkbox;
