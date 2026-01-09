@@ -50,12 +50,16 @@ public:
 	override ScreenAction handle(ScreenContext context, KeyEvent event)
 	{
 		if (!_enabled)
+		{
 			return ScreenAction.none();
+		}
 
 		if (isEnter(event) || isSpace(event))
 		{
 			if (_onClick !is null)
+			{
 				return _onClick();
+			}
 			return ScreenAction.none();
 		}
 
