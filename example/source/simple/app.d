@@ -22,8 +22,8 @@ final class Simple : ScreenBase
 
 	override void build(ScreenContext context, Window window, WidgetContainer ui)
 	{
-		auto okBtn = new Button(3, 2, "OK");
-		auto cancelBtn = new Button(3, 9, "Cancel", () => ScreenAction.quit(ScreenResult.none()));
+		auto okBtn = new Button(3, 2, "OK", () => ScreenAction.push(new Simple()));
+		auto cancelBtn = new Button(3, 9, "Cancel", () => ScreenAction.pop(ScreenResult.none()));
 
 		_ui.add(okBtn);
 		_ui.add(cancelBtn);
