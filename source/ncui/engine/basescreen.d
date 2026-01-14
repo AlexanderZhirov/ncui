@@ -2,6 +2,7 @@ module ncui.engine.basescreen;
 
 import ncui.core.ncwin;
 import ncui.core.window;
+import ncui.core.panel;
 import ncui.core.event;
 import ncui.engine.screen;
 import ncui.engine.action;
@@ -11,10 +12,12 @@ abstract class ScreenBase : IScreen
 {
 protected:
 	Window _window;
+	Panel _panel;
 	WidgetContainer _ui;
 	bool _built;
 
 	void ensureWindow(ScreenContext context);
+
 	void build(ScreenContext context, Window window, WidgetContainer ui);
 	void layout(ScreenContext context, Window window, WidgetContainer ui)
 	{
@@ -28,14 +31,16 @@ protected:
 private:
 	void renderAll(ScreenContext context)
 	{
-		import deimos.ncurses : doupdate;
+		import deimos.panel : update_panels;
+		import deimos.ncurses : doupdate, curs_set;
 		import ncui.lib.checks;
 
-		_window.erase();
+		curs_set(context.session.settings.cursor);
+
 		layout(context, _window, _ui);
 		_ui.render(_window, context);
-		_window.noutrefresh();
 
+		update_panels();
 		ncuiNotErr!doupdate();
 	}
 
@@ -52,12 +57,15 @@ public:
 
 	override ScreenAction onShow(ScreenContext context)
 	{
-		if (_window !is null)
+		if (_window is null || _panel is null)
 		{
-			_window.close();
+			ensureWindow(context);
 		}
 
-		ensureWindow(context);
+		if (_panel !is null)
+		{
+			_panel.top();
+		}
 
 		if (!_built)
 		{
@@ -96,11 +104,22 @@ public:
 
 	override void close()
 	{
+		if (_ui !is null)
+		{
+			_ui.closeAll();
+		}
+
+		if (_panel !is null)
+		{
+			_panel.close();
+		}
+
 		if (_window !is null)
 		{
 			_window.close();
 		}
 
+		_panel = null;
 		_window = null;
 		_built = false;
 		_ui = new WidgetContainer();
