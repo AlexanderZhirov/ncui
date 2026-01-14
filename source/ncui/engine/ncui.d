@@ -63,7 +63,6 @@ private:
 			final switch (action.kind)
 			{
 			case ActionKind.Push:
-				_session.clear();
 				_stack ~= action.next;
 				action = action.next.onShow(_context);
 				break;
@@ -74,7 +73,6 @@ private:
 					_stack[$ - 1].close();
 					_stack.popBack();
 				}
-				_session.clear();
 				_stack ~= action.next;
 				action = action.next.onShow(_context);
 				break;
@@ -86,7 +84,6 @@ private:
 				// Количество удаляемых экранов.
 				int screenCount = (action.popScreenCount <= 0) ? 1 : action.popScreenCount;
 				popMany(screenCount);
-				_session.clear();
 				if (_stack.length == 0)
 				{
 					_result = childResult;
@@ -110,7 +107,6 @@ private:
 				auto childResult = action.result;
 				// Удалить экраны до указанного тега.
 				popToTag(action.targetTag);
-				_session.clear();
 				if (_stack.length == 0)
 				{
 					_result = childResult;
@@ -168,5 +164,15 @@ public:
 		// Завершить сессию ncurses.
 		_session.close();
 		return _result;
+	}
+
+	void stop()
+	{
+		popMany(cast(int) _stack.length);
+
+		if (_session !is null)
+		{
+			_session.close();
+		}
 	}
 }
