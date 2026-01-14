@@ -8,6 +8,16 @@ void main()
 
 	auto config = SessionConfig(InputMode.raw, Cursor.hidden, Echo.off, Keypad.on);
 	NCUI ncui = new NCUI(config);
-	auto window = new Simple();
-	ncui.run(window);
+
+	Simple screen = new Simple();
+
+	try
+	{
+		ncui.run(screen);
+	}
+	catch (Exception e)
+	{
+		ncui.stop();
+		info(e.msg);
+	}
 }

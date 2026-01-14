@@ -12,6 +12,7 @@ final class Simple : ScreenBase
 		int width = getmaxx(context.session.root());
 
 		_window = new Window(height, width, 0, 0);
+		_panel = new Panel(_window.handle());
 	}
 
 	override void layout(ScreenContext context, Window window, WidgetContainer ui)
@@ -25,13 +26,20 @@ final class Simple : ScreenBase
 		auto okBtn = new Button(3, 2, "OK", () => ScreenAction.push(new Simple()));
 		auto cancelBtn = new Button(3, 9, "Cancel", () => ScreenAction.pop(ScreenResult.none()));
 
-		auto disableOk = new Checkbox(4, 2,"Disable OK", false, (checked) {
+		auto disableOk = new Checkbox(4, 2, "Disable OK", false, (checked) {
 			okBtn.setEnabled(!checked);
 		});
+
+		auto textBox1 = new TextBox(5, 2, 30, "Первое поле");
+		auto textBox2 = new TextBox(6, 2, 30, "Второе поле");
+		auto textBox3 = new TextBox(7, 2, 30, "Третье поле");
 
 		_ui.add(okBtn);
 		_ui.add(cancelBtn);
 		_ui.add(disableOk);
+		_ui.add(textBox1);
+		_ui.add(textBox2);
+		_ui.add(textBox3);
 	}
 
 	override ScreenAction handleGlobal(ScreenContext context, KeyEvent event)

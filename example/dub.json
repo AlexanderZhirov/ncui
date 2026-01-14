@@ -7,5 +7,9 @@
 		"ncui": {
 			"path": ".."
 		}
-	}
+	},
+	"libs": [
+		"form",
+		"panel"
+	]
 }
