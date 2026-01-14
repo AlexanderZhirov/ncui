@@ -23,6 +23,14 @@ interface IWidget
 	ScreenAction handle(ScreenContext context, KeyEvent event);
 }
 
+/**
+ * Детерминировано закрываемый виджет.
+ */
+interface IWidgetClosable
+{
+	void close();
+}
+
 // Обработка стандартных нажатий клавиш.
 
 bool isTab(KeyEvent ev)
