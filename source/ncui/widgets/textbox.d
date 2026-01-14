@@ -11,10 +11,9 @@ import ncui.engine.screen;
 import ncui.engine.action;
 import ncui.lib.checks;
 
-import std.string : toStringz, fromStringz;
+import std.string : toStringz;
 import std.utf : toUTF8;
-import std.algorithm : max, min;
-import std.conv : to;
+import std.algorithm : min;
 import std.range : repeat;
 import std.array : array;
 
@@ -27,6 +26,8 @@ private:
 	int _y;
 	int _x;
 	int _width;
+	// Метка поля.
+	dstring _label;
 	// Данные поля.
 	dstring _text;
 	// Флаг инициализации формы.
@@ -40,8 +41,9 @@ private:
 	// Скрытый символ.
 	dchar _hiddenSymbol = '*';
 
-	FIELD* _field;
-	FIELD*[2] _fields;
+	FIELD* _fieldLabel;
+	FIELD* _fieldInput;
+	FIELD*[3] _fields;
 	FORM* _form;
 	NCWin _window;
 
@@ -62,13 +64,12 @@ private:
 			return;
 		}
 
+		// Принудительно сделать поле ввода активным.
+		ncuiFormNotErr!set_current_field(_form, _fieldInput);
+		// Установка высокой видимости.
 		ncuiNotErr!curs_set(Cursor.high);
-
 		// Держать курсор на форме при активированном виджете.
-		if (_form !is null)
-		{
-			ncuiFormNotErr!pos_form_cursor(_form);
-		}
+		ncuiFormNotErr!pos_form_cursor(_form);
 	}
 
 	void moveCursor(size_t position)
@@ -97,7 +98,7 @@ private:
 	void modifyField()
 	{
 		dstring currentText = _hidden ? _hiddenSymbol.repeat(_text.length).array.idup : _text;
-		ncuiFormNotErr!set_field_buffer(_field, 0, currentText.toUTF8.toStringz);
+		ncuiFormNotErr!set_field_buffer(_fieldInput, 0, currentText.toUTF8.toStringz);
 	}
 
 	dchar modifyChar(dchar symbol)
@@ -112,22 +113,50 @@ private:
 			return;
 		}
 
-		// Создание внутреннего окна.
-		_window = ncuiNotNull!derwin(window.handle(), 1, _width, _y, _x);
-		// Создание поля формы.
-		_field = ncuiNotNull!new_field(1, _width, 0, 0, 0, 0);
+		// Ширина метки поля.
+		int labelWidth = cast(int) _label.length;
+		// Общая ширина: ширина метки поля + отступ (1) + ширина поля ввода.
+		int totalWidth = (labelWidth > 0) ? (labelWidth + 1 + _width) : _width;
 
-		_fields[0] = _field;
-		_fields[1] = null;
+		// Создание внутреннего окна.
+		_window = ncuiNotNull!derwin(window.handle(), 1, totalWidth, _y, _x);
+		// Создание поля ввода.
+		_fieldInput = ncuiNotNull!new_field(1, _width, 0, totalWidth - _width, 0, 0);
+
+		// Если метка поля была установлена.
+		if (labelWidth > 0)
+		{
+			// Создание метки поля.
+			_fieldLabel = ncuiNotNull!new_field(1, labelWidth, 0, 0, 0, 0);
+			// Установка опций для метки поля.
+			ncuiFormNotErr!set_field_opts(_fieldLabel, O_VISIBLE | O_PUBLIC | O_AUTOSKIP);
+			// Снять активность поля.
+			ncuiFormNotErr!field_opts_off(_fieldLabel, O_ACTIVE);
+			// Запретить поле для редактирования
+			ncuiFormNotErr!field_opts_off(_fieldLabel, O_EDIT);
+			// Установка названия метки.
+			ncuiFormNotErr!set_field_buffer(_fieldLabel, 0, _label.toUTF8.toStringz);
+
+			_fields[0] = _fieldLabel;
+			_fields[1] = _fieldInput;
+		}
+		// Иначе отобразить только поле ввода.
+		else
+		{
+			_fields[0] = _fieldInput;
+			_fields[1] = null;
+		}
+
+		_fields[2] = null;
 
 		// Установка атрибута фона для поля — подчеркивание.
-		ncuiFormNotErr!set_field_back(_field, A_UNDERLINE);
+		ncuiFormNotErr!set_field_back(_fieldInput, A_UNDERLINE);
 		// Отключение опции автоперехода к следующему полю при заполнении.
-		ncuiFormNotErr!field_opts_off(_field, O_AUTOSKIP);
+		ncuiFormNotErr!field_opts_off(_fieldInput, O_AUTOSKIP);
 		// Отключение статического режима поля — позволяет использовать горизонтальную прокрутку.
-		ncuiFormNotErr!field_opts_off(_field, O_STATIC);
+		ncuiFormNotErr!field_opts_off(_fieldInput, O_STATIC);
 		// Установка максимального размера текста в поле (ограничение на 255 символов).
-		ncuiFormNotErr!set_max_field(_field, _buffer);
+		ncuiFormNotErr!set_max_field(_fieldInput, _buffer);
 		// Создание формы.
 		_form = ncuiNotNull!new_form(cast(FIELD**) _fields);
 		// Привязка формы к родителю.
@@ -147,11 +176,16 @@ private:
 	}
 
 public:
-	this(int y, int x, int width, bool hidden, dstring initText = dstring.init)
+	this(int y, int x, int width, bool hidden, dstring label = dstring.init, dstring initText = dstring
+			.init)
 	{
+		// Ширина обязана быть ненулевой.
+		ncuiExpectMsg!((int w) => w > 0)("TextBox.width must be > 0", true, width);
+
 		_y = y;
 		_x = x;
 		_width = width;
+		_label = label.length ? label ~ ":" : "";
 		_text = initText;
 		_hidden = hidden;
 
@@ -176,6 +210,12 @@ public:
 	void hideText(bool hidden)
 	{
 		_hidden = hidden;
+
+		if (!_inited)
+		{
+			return;
+		}
+
 		modifyField();
 		moveCursor(_cursorPosition);
 	}
@@ -214,20 +254,24 @@ public:
 				--_cursorPosition;
 				break;
 			case KEY_RIGHT:
-				if (_cursorPosition >= _text.length)
+				if (_cursorPosition < _text.length)
 				{
-					break;
+					driveRequest(REQ_RIGHT_CHAR);
+					++_cursorPosition;
 				}
-				driveRequest(REQ_RIGHT_CHAR);
-				++_cursorPosition;
 				break;
 			case KEY_DC:
-				if (_cursorPosition >= _text.length)
+				if (_cursorPosition < _text.length)
 				{
-					break;
+					driveRequest(REQ_DEL_CHAR);
+					_text = _text[0 .. _cursorPosition] ~ _text[_cursorPosition + 1 .. $];
+					// Если когда-нибудь сломается hidden-режим — раскомментировать.
+					// if (_hidden)
+					// {
+					// 	modifyField();
+					// 	moveCursor(_cursorPosition);
+					// }
 				}
-				driveRequest(REQ_DEL_CHAR);
-				_text = _text[0 .. _cursorPosition] ~ _text[_cursorPosition + 1 .. $];
 				break;
 			case KEY_BACKSPACE:
 				if (_cursorPosition == 0)
@@ -258,18 +302,22 @@ public:
 					--_cursorPosition;
 				}
 			}
-			else if (_cursorPosition < _text.length)
+			// Чтобы не поймать расхождение данных с формой.
+			else if(_text.length < _buffer)
 			{
-				_text = _text[0 .. _cursorPosition] ~ event.ch ~ _text[_cursorPosition .. $];
-				modifyField();
-				moveCursor(++_cursorPosition);
-			}
-			else
-			{
-				driveRequest(REQ_INS_MODE);
-				driveChar(modifyChar(event.ch));
-				_text ~= event.ch;
-				++_cursorPosition;
+				if (_cursorPosition < _text.length)
+				{
+					_text = _text[0 .. _cursorPosition] ~ event.ch ~ _text[_cursorPosition .. $];
+					modifyField();
+					moveCursor(++_cursorPosition);
+				}
+				else
+				{
+					driveRequest(REQ_INS_MODE);
+					driveChar(modifyChar(event.ch));
+					_text ~= event.ch;
+					++_cursorPosition;
+				}
 			}
 
 			return ScreenAction.none();
@@ -287,13 +335,21 @@ public:
 			_form = null;
 		}
 
-		if (_field !is null)
+		if (_fieldLabel !is null)
 		{
-			ncuiFormNotErr!free_field(_field);
-			_field = null;
+			ncuiFormNotErr!free_field(_fieldLabel);
+			_fieldLabel = null;
 		}
+
+		if (_fieldInput !is null)
+		{
+			ncuiFormNotErr!free_field(_fieldInput);
+			_fieldInput = null;
+		}
+
 		_fields[0] = null;
 		_fields[1] = null;
+		_fields[2] = null;
 
 		if (!_window.isNull)
 		{
