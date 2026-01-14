@@ -26,13 +26,13 @@ final class Simple : ScreenBase
 		auto okBtn = new Button(3, 2, "OK", () => ScreenAction.push(new Simple()));
 		auto cancelBtn = new Button(3, 9, "Cancel", () => ScreenAction.pop(ScreenResult.none()));
 
-		auto disableOk = new Checkbox(4, 2, "Disable OK", false, (checked) {
-			okBtn.setEnabled(!checked);
-		});
+		auto textBox1 = new TextBox(5, 2, 30, true, "Первое поле");
+		auto textBox2 = new TextBox(6, 2, 30, false, "Второе поле");
+		auto textBox3 = new TextBox(7, 2, 30, false, "Третье поле");
 
-		auto textBox1 = new TextBox(5, 2, 30, "Первое поле");
-		auto textBox2 = new TextBox(6, 2, 30, "Второе поле");
-		auto textBox3 = new TextBox(7, 2, 30, "Третье поле");
+		auto disableOk = new Checkbox(4, 2, "Показать символы", false, (checked) {
+			textBox1.hideText(!checked);
+		});
 
 		_ui.add(okBtn);
 		_ui.add(cancelBtn);
