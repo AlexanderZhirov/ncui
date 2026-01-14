@@ -22,4 +22,14 @@ struct NCWin
 	{
 		return _p is null;
 	}
+
+	void opAssign(NCWin rhs)
+	{
+		_p = rhs._p;
+	}
+
+	void opAssign(WINDOW* rhs)
+	{
+		_p = rhs;
+	}
 }
