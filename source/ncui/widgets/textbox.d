@@ -96,8 +96,8 @@ private:
 
 	void modifyField()
 	{
-		dstring text = _hidden ? _hiddenSymbol.repeat(_text.length).array.idup : _text;
-		ncuiFormNotErr!set_field_buffer(_field, 0, text.toUTF8.toStringz);
+		dstring currentText = _hidden ? _hiddenSymbol.repeat(_text.length).array.idup : _text;
+		ncuiFormNotErr!set_field_buffer(_field, 0, currentText.toUTF8.toStringz);
 	}
 
 	dchar modifyChar(dchar symbol)
@@ -147,15 +147,15 @@ private:
 	}
 
 public:
-	this(int y, int x, int width, bool hidden, dstring text = dstring.init)
+	this(int y, int x, int width, bool hidden, dstring initText = dstring.init)
 	{
 		_y = y;
 		_x = x;
 		_width = width;
-		_text = text;
+		_text = initText;
 		_hidden = hidden;
 
-		_cursorPosition = text.length;
+		_cursorPosition = initText.length;
 	}
 
 	dstring text()
