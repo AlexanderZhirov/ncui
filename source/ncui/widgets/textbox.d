@@ -15,6 +15,8 @@ import std.string : toStringz, fromStringz;
 import std.utf : toUTF8;
 import std.algorithm : max, min;
 import std.conv : to;
+import std.range : repeat;
+import std.array : array;
 
 final class TextBox : IWidget, IWidgetClosable
 {
@@ -33,6 +35,10 @@ private:
 	size_t _cursorPosition;
 	// Максимальный буфер.
 	int _buffer = 256;
+	// Флаг скрытых символов.
+	bool _hidden;
+	// Скрытый символ.
+	dchar _hiddenSymbol = '*';
 
 	FIELD* _field;
 	FIELD*[2] _fields;
@@ -88,6 +94,17 @@ private:
 		driveRequest(REQ_INS_MODE);
 	}
 
+	void modifyField()
+	{
+		dstring text = _hidden ? _hiddenSymbol.repeat(_text.length).array.idup : _text;
+		ncuiFormNotErr!set_field_buffer(_field, 0, text.toUTF8.toStringz);
+	}
+
+	dchar modifyChar(dchar symbol)
+	{
+		return _hidden ? _hiddenSymbol : symbol;
+	}
+
 	void ensureCreated(Window window)
 	{
 		if (_inited)
@@ -122,7 +139,7 @@ private:
 		// Перевод поля в режим вставки символа (insert mode).
 		driveRequest(REQ_INS_MODE);
 		// Установка текста в поле.
-		ncuiFormNotErr!set_field_buffer(_field, 0, _text.toUTF8.toStringz);
+		modifyField();
 		// Позиция курсора в конце текста.
 		moveCursor(_text.length);
 
@@ -130,12 +147,13 @@ private:
 	}
 
 public:
-	this(int y, int x, int width, dstring text = dstring.init)
+	this(int y, int x, int width, bool hidden, dstring text = dstring.init)
 	{
 		_y = y;
 		_x = x;
 		_width = width;
 		_text = text;
+		_hidden = hidden;
 
 		_cursorPosition = text.length;
 	}
@@ -153,6 +171,13 @@ public:
 	override @property bool enabled()
 	{
 		return _enabled;
+	}
+
+	void hideText(bool hidden)
+	{
+		_hidden = hidden;
+		modifyField();
+		moveCursor(_cursorPosition);
 	}
 
 	override void render(Window window, ScreenContext context, bool focused)
@@ -236,13 +261,13 @@ public:
 			else if (_cursorPosition < _text.length)
 			{
 				_text = _text[0 .. _cursorPosition] ~ event.ch ~ _text[_cursorPosition .. $];
-				ncuiFormNotErr!set_field_buffer(_field, 0, _text.toUTF8.toStringz);
+				modifyField();
 				moveCursor(++_cursorPosition);
 			}
 			else
 			{
 				driveRequest(REQ_INS_MODE);
-				driveChar(event.ch);
+				driveChar(modifyChar(event.ch));
 				_text ~= event.ch;
 				++_cursorPosition;
 			}
