@@ -127,4 +127,24 @@ public:
 		// Иначе отдать ввод текущему виджету.
 		return _children[_focus].handle(context, event);
 	}
+
+	// Освободить ресурсы виджетов, но оставить сами виджеты в контейнере.
+	void closeResources()
+	{
+		foreach (child; _children)
+		{
+			if (auto widget = cast(IWidgetClosable) child)
+			{
+				widget.close();
+			}
+		}
+	}
+
+	// Детерминировано закрыть виджеты.
+	void closeAll()
+	{
+		closeResources();
+		_children.length = 0;
+		_focus = -1;
+	}
 }
