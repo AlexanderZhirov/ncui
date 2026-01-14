@@ -131,6 +131,7 @@ final class Session
 private:
 	NCWin _root;
 	bool _ended;
+	SessionConfig _config;
 
 	// Применяет параметры конфигурации к активной ncurses-сессии.
 	void setup(ref const(SessionConfig) config)
@@ -194,6 +195,13 @@ public:
 		gInitialized = true;
 		// Применение конфигурации
 		setup(config);
+
+		_config = config;
+	}
+
+	@property SessionConfig settings()
+	{
+		return _config;
 	}
 
 	NCWin root()
