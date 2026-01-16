@@ -26,9 +26,10 @@ final class Simple : ScreenBase
 		auto okBtn = new Button(3, 2, "OK", () => ScreenAction.push(new Simple()));
 		auto cancelBtn = new Button(3, 9, "Cancel", () => ScreenAction.pop(ScreenResult.none()));
 
-		auto textBox1 = new TextBox(5, 3, 30, true, "Фамилия");
-		auto textBox2 = new TextBox(6, 7, 30, false, "Имя");
-		auto textBox3 = new TextBox(7, 2, 30, false);
+		auto textBox1 = new TextBox(5, 11, 30, true, "Фамилия");
+		auto textBox2 = new TextBox(6, 9, 30, false, "Кириллица", "Простой тест", r"^[А-Яа-я]$");
+		auto textBox3 = new TextBox(7, 10, 30, false, "Латиница", string.init, r"^[A-Za-z]$");
+		auto textBox4 = new TextBox(8, 2, 30, false, "Латиница + цифры", string.init, r"^[a-zA-Z0-9]$");
 
 		auto disableOk = new Checkbox(4, 2, "Показать символы", false, (checked) {
 			textBox1.hideText(!checked);
@@ -40,6 +41,7 @@ final class Simple : ScreenBase
 		_ui.add(textBox1);
 		_ui.add(textBox2);
 		_ui.add(textBox3);
+		_ui.add(textBox4);
 	}
 
 	override ScreenAction handleGlobal(ScreenContext context, KeyEvent event)
