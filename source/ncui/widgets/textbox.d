@@ -12,10 +12,11 @@ import ncui.engine.action;
 import ncui.lib.checks;
 
 import std.string : toStringz;
-import std.utf : toUTF8;
+import std.utf : toUTF8, toUTF32;
 import std.algorithm : min;
 import std.range : repeat;
 import std.array : array;
+import std.regex : matchFirst, regex, Regex;
 
 final class TextBox : IWidget, IWidgetClosable
 {
@@ -30,6 +31,10 @@ private:
 	dstring _label;
 	// Данные поля.
 	dstring _text;
+	// Наличие установленной маски.
+	bool _hasMask;
+	// Маска ввода.
+	Regex!dchar _mask;
 	// Флаг инициализации формы.
 	bool _inited;
 	// Позиция курсора.
@@ -175,9 +180,22 @@ private:
 		_inited = true;
 	}
 
+	bool allowedChar(dchar symbol)
+	{
+		if (!_hasMask)
+		{
+			return true;
+		}
+
+		dchar[1] line = symbol;
+		return !matchFirst(line[], _mask).empty;
+	}
+
 public:
-	this(int y, int x, int width, bool hidden, dstring label = dstring.init, dstring initText = dstring
-			.init)
+	this(int y, int x, int width, bool hidden,
+		string label = string.init,
+		string initText = string.init,
+		string mask = string.init)
 	{
 		// Ширина обязана быть ненулевой.
 		ncuiExpectMsg!((int w) => w > 0)("TextBox.width must be > 0", true, width);
@@ -185,16 +203,26 @@ public:
 		_y = y;
 		_x = x;
 		_width = width;
-		_label = label.length ? label ~ ":" : "";
-		_text = initText;
+		_label = label.length ? label.toUTF32 ~ ":" : "";
+		_text = initText.toUTF32;
 		_hidden = hidden;
 
-		_cursorPosition = initText.length;
+		if (mask.length)
+		{
+			_mask = regex(mask.toUTF32);
+			_hasMask = true;
+		}
+		else
+		{
+			_hasMask = false;
+		}
+
+		_cursorPosition = _text.length;
 	}
 
-	dstring text()
+	string text()
 	{
-		return _text;
+		return _text.toUTF8;
 	}
 
 	override @property bool focusable()
@@ -303,7 +331,7 @@ public:
 				}
 			}
 			// Чтобы не поймать расхождение данных с формой.
-			else if(_text.length < _buffer)
+		else if (_text.length < _buffer && allowedChar(event.ch))
 			{
 				if (_cursorPosition < _text.length)
 				{
