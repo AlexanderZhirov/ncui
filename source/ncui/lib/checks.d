@@ -124,7 +124,7 @@ auto ncuiNotNull(alias fn, Args...)(
 	return result;
 }
 
-private string formErrName(int code)
+private string errName(int code)
 {
 	switch (code)
 	{
@@ -164,11 +164,11 @@ private string formErrName(int code)
 }
 
 /**
- * Вызывает функцию forms и строго проверяет успешность по коду возврата.
+ * Вызывает функцию ncurses библиотек и строго проверяет успешность по коду возврата.
  *
  * Бросает исключение с местом вызова, если код возврата не равен `E_OK`.
  */
-int ncuiFormNotErr(alias fn, Args...)(
+int ncuiLibNotErr(alias fn, Args...)(
 	Args args,
 	string file = __FILE__,
 	size_t line = __LINE__,
@@ -177,24 +177,24 @@ int ncuiFormNotErr(alias fn, Args...)(
 ) if (__traits(compiles, fn(args)))
 {
 	static assert(is(typeof(fn(args)) == int),
-		"ncuiFormNotErr: wrapped function must return int (forms E_* codes).");
+		"ncuiLibNotErr: wrapped function must return int (ncurses libraries E_* codes).");
 
 	const int result = fn(args);
 
 	enforce(result == E_OK, format(
 			"Function returned error: %s() result=%s(%s) expected=E_OK [%s:%s | %s | %s]",
-			_fnName!fn, result, formErrName(result), file, line, module_, function_
+			_fnName!fn, result, errName(result), file, line, module_, function_
 	));
 
 	return result;
 }
 
 /**
- * Вызывает функцию forms и проверяет, что код возврата входит в список допустимых.
+ * Вызывает функцию ncurses библиотек и проверяет, что код возврата входит в список допустимых.
  *
  * Бросает исключение с местом вызова, если код возврата не входит в список допустимых.
  */
-int ncuiFormNotErrAny(alias fn, Allowed, Args...)(
+int ncuiLibNotErrAny(alias fn, Allowed, Args...)(
 	Allowed[] codes,
 	Args args,
 	string file = __FILE__,
@@ -204,7 +204,7 @@ int ncuiFormNotErrAny(alias fn, Allowed, Args...)(
 ) if (__traits(compiles, fn(args)))
 {
 	static assert(is(typeof(fn(args)) == int),
-		"ncuiFormNotErrAny: wrapped function must return int (forms E_* codes).");
+		"ncuiLibNotErrAny: wrapped function must return int (ncurses libraries E_* codes).");
 
 	const int result = fn(args);
 
@@ -221,7 +221,7 @@ int ncuiFormNotErrAny(alias fn, Allowed, Args...)(
 
 	enforce(match, format(
 			"Function returned error: %s() rc=%s(%s) allowed=%s [%s:%s | %s | %s]",
-			_fnName!fn, result, formErrName(result), codes, file, line, module_, function_
+			_fnName!fn, result, errName(result), codes, file, line, module_, function_
 	));
 
 	return result;

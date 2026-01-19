@@ -54,12 +54,12 @@ private:
 
 	void driveRequest(int request)
 	{
-		ncuiFormNotErr!form_driver_w(_form, KEY_CODE_YES, request);
+		ncuiLibNotErr!form_driver_w(_form, KEY_CODE_YES, request);
 	}
 
 	void driveChar(dchar ch)
 	{
-		ncuiFormNotErr!form_driver_w(_form, OK, ch);
+		ncuiLibNotErr!form_driver_w(_form, OK, ch);
 	}
 
 	void setCursor(ScreenContext context, bool focused)
@@ -70,11 +70,11 @@ private:
 		}
 
 		// Принудительно сделать поле ввода активным.
-		ncuiFormNotErr!set_current_field(_form, _fieldInput);
+		ncuiLibNotErr!set_current_field(_form, _fieldInput);
 		// Установка высокой видимости.
 		ncuiNotErr!curs_set(Cursor.high);
 		// Держать курсор на форме при активированном виджете.
-		ncuiFormNotErr!pos_form_cursor(_form);
+		ncuiLibNotErr!pos_form_cursor(_form);
 	}
 
 	void moveCursor(size_t position)
@@ -103,7 +103,7 @@ private:
 	void modifyField()
 	{
 		dstring currentText = _hidden ? _hiddenSymbol.repeat(_text.length).array.idup : _text;
-		ncuiFormNotErr!set_field_buffer(_fieldInput, 0, currentText.toUTF8.toStringz);
+		ncuiLibNotErr!set_field_buffer(_fieldInput, 0, currentText.toUTF8.toStringz);
 	}
 
 	dchar modifyChar(dchar symbol)
@@ -134,13 +134,13 @@ private:
 			// Создание метки поля.
 			_fieldLabel = ncuiNotNull!new_field(1, labelWidth, 0, 0, 0, 0);
 			// Установка опций для метки поля.
-			ncuiFormNotErr!set_field_opts(_fieldLabel, O_VISIBLE | O_PUBLIC | O_AUTOSKIP);
+			ncuiLibNotErr!set_field_opts(_fieldLabel, O_VISIBLE | O_PUBLIC | O_AUTOSKIP);
 			// Снять активность поля.
-			ncuiFormNotErr!field_opts_off(_fieldLabel, O_ACTIVE);
+			ncuiLibNotErr!field_opts_off(_fieldLabel, O_ACTIVE);
 			// Запретить поле для редактирования
-			ncuiFormNotErr!field_opts_off(_fieldLabel, O_EDIT);
+			ncuiLibNotErr!field_opts_off(_fieldLabel, O_EDIT);
 			// Установка названия метки.
-			ncuiFormNotErr!set_field_buffer(_fieldLabel, 0, _label.toUTF8.toStringz);
+			ncuiLibNotErr!set_field_buffer(_fieldLabel, 0, _label.toUTF8.toStringz);
 
 			_fields[0] = _fieldLabel;
 			_fields[1] = _fieldInput;
@@ -155,21 +155,21 @@ private:
 		_fields[2] = null;
 
 		// Установка атрибута фона для поля — подчеркивание.
-		ncuiFormNotErr!set_field_back(_fieldInput, A_UNDERLINE);
+		ncuiLibNotErr!set_field_back(_fieldInput, A_UNDERLINE);
 		// Отключение опции автоперехода к следующему полю при заполнении.
-		ncuiFormNotErr!field_opts_off(_fieldInput, O_AUTOSKIP);
+		ncuiLibNotErr!field_opts_off(_fieldInput, O_AUTOSKIP);
 		// Отключение статического режима поля — позволяет использовать горизонтальную прокрутку.
-		ncuiFormNotErr!field_opts_off(_fieldInput, O_STATIC);
+		ncuiLibNotErr!field_opts_off(_fieldInput, O_STATIC);
 		// Установка максимального размера текста в поле (ограничение на 255 символов).
-		ncuiFormNotErr!set_max_field(_fieldInput, _buffer);
+		ncuiLibNotErr!set_max_field(_fieldInput, _buffer);
 		// Создание формы.
 		_form = ncuiNotNull!new_form(cast(FIELD**) _fields);
 		// Привязка формы к родителю.
-		ncuiFormNotErr!set_form_win(_form, window.handle());
+		ncuiLibNotErr!set_form_win(_form, window.handle());
 		// Привязка формы к внутреннему окну.
-		ncuiFormNotErr!set_form_sub(_form, _window);
+		ncuiLibNotErr!set_form_sub(_form, _window);
 		// Публикация формы.
-		ncuiFormNotErrAny!post_form([E_OK, E_POSTED], _form);
+		ncuiLibNotErrAny!post_form([E_OK, E_POSTED], _form);
 		// Перевод поля в режим вставки символа (insert mode).
 		driveRequest(REQ_INS_MODE);
 		// Установка текста в поле.
@@ -358,20 +358,20 @@ public:
 	{
 		if (_form !is null)
 		{
-			ncuiFormNotErrAny!unpost_form([E_OK, E_NOT_POSTED], _form);
-			ncuiFormNotErr!free_form(_form);
+			ncuiLibNotErrAny!unpost_form([E_OK, E_NOT_POSTED], _form);
+			ncuiLibNotErr!free_form(_form);
 			_form = null;
 		}
 
 		if (_fieldLabel !is null)
 		{
-			ncuiFormNotErr!free_field(_fieldLabel);
+			ncuiLibNotErr!free_field(_fieldLabel);
 			_fieldLabel = null;
 		}
 
 		if (_fieldInput !is null)
 		{
-			ncuiFormNotErr!free_field(_fieldInput);
+			ncuiLibNotErr!free_field(_fieldInput);
 			_fieldInput = null;
 		}
 

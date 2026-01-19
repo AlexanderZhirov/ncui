@@ -38,7 +38,7 @@ private:
 
 	int driveRequestAllowDenied(int request)
 	{
-		return ncuiFormNotErrAny!form_driver_w([E_OK, E_REQUEST_DENIED], _form, KEY_CODE_YES, request);
+		return ncuiLibNotErrAny!form_driver_w([E_OK, E_REQUEST_DENIED], _form, KEY_CODE_YES, request);
 	}
 
 	void driveRepeat(int request, uint steps)
@@ -119,7 +119,7 @@ private:
 				continue;
 			}
 
-			const int result = ncuiFormNotErrAny!form_driver_w([E_OK, E_REQUEST_DENIED], _form, OK, ch);
+			const int result = ncuiLibNotErrAny!form_driver_w([E_OK, E_REQUEST_DENIED], _form, OK, ch);
 			// Прекратить вставку, если буфер переполнен.
 			if (result == E_REQUEST_DENIED)
 			{
@@ -135,8 +135,8 @@ private:
 			return;
 		}
 
-		// Установить поле текущем в форме.
-		ncuiFormNotErrAny!set_current_field([E_OK, E_CURRENT], _form, _fieldText);
+		// Установить поле текущим в форме.
+		ncuiLibNotErrAny!set_current_field([E_OK, E_CURRENT], _form, _fieldText);
 
 		driveRequestAllowDenied(REQ_END_FIELD);
 		driveRequestAllowDenied(REQ_END_LINE);
@@ -147,8 +147,8 @@ private:
 	// Посимвольное заполнение поля, позволяющее автоматически переносить слова на новую строку.
 	void fillField()
 	{
-		// Установить поле текущем в форме.
-		ncuiFormNotErrAny!set_current_field([E_OK, E_CURRENT], _form, _fieldText);
+		// Установить поле текущим в форме.
+		ncuiLibNotErrAny!set_current_field([E_OK, E_CURRENT], _form, _fieldText);
 
 		// Очистить поле формы перед заполнением текстом.
 		cleanForm();
@@ -172,20 +172,20 @@ private:
 		_fields[0] = _fieldText;
 		_fields[1] = null;
 
-		ncuiFormNotErr!field_opts_off(_fieldText, O_STATIC);
-		ncuiFormNotErr!set_max_field(_fieldText, _bufferSize);
+		ncuiLibNotErr!field_opts_off(_fieldText, O_STATIC);
+		ncuiLibNotErr!set_max_field(_fieldText, _bufferSize);
 
-		ncuiFormNotErr!field_opts_off(_fieldText, O_AUTOSKIP);
-		ncuiFormNotErr!field_opts_on(_fieldText, O_WRAP);
+		ncuiLibNotErr!field_opts_off(_fieldText, O_AUTOSKIP);
+		ncuiLibNotErr!field_opts_on(_fieldText, O_WRAP);
 
 		_form = ncuiNotNull!new_form(cast(FIELD**) _fields);
 
-		ncuiFormNotErr!set_form_win(_form, window.handle());
-		ncuiFormNotErr!set_form_sub(_form, _window);
+		ncuiLibNotErr!set_form_win(_form, window.handle());
+		ncuiLibNotErr!set_form_sub(_form, _window);
 
-		// ncuiFormNotErr!field_opts_off(_fieldText, O_EDIT);
+		// ncuiLibNotErr!field_opts_off(_fieldText, O_EDIT);
 
-		ncuiFormNotErrAny!post_form([E_OK, E_POSTED], _form);
+		ncuiLibNotErrAny!post_form([E_OK, E_POSTED], _form);
 
 		// Заполнение поля текстом.
 		fillField();
@@ -287,14 +287,14 @@ public:
 	{
 		if (_form !is null)
 		{
-			ncuiFormNotErrAny!unpost_form([E_OK, E_NOT_POSTED], _form);
-			ncuiFormNotErr!free_form(_form);
+			ncuiLibNotErrAny!unpost_form([E_OK, E_NOT_POSTED], _form);
+			ncuiLibNotErr!free_form(_form);
 			_form = null;
 		}
 
 		if (_fieldText !is null)
 		{
-			ncuiFormNotErr!free_field(_fieldText);
+			ncuiLibNotErr!free_field(_fieldText);
 			_fieldText = null;
 		}
 
