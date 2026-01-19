@@ -35,6 +35,12 @@ final class Simple : ScreenBase
 			textBox1.hideText(!checked);
 		});
 
+		import std.file : readText;
+
+		auto textview = new TextView(10, 2, 50, 3, readText("example/text"));
+
+		textview.append("Append text.");
+
 		_ui.add(okBtn);
 		_ui.add(cancelBtn);
 		_ui.add(disableOk);
@@ -42,6 +48,7 @@ final class Simple : ScreenBase
 		_ui.add(textBox2);
 		_ui.add(textBox3);
 		_ui.add(textBox4);
+		_ui.add(textview);
 	}
 
 	override ScreenAction handleGlobal(ScreenContext context, KeyEvent event)
