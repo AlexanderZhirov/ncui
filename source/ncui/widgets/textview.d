@@ -140,6 +140,8 @@ private:
 
 		driveRequestAllowDenied(REQ_END_FIELD);
 		driveRequestAllowDenied(REQ_END_LINE);
+		driveRequestAllowDenied(REQ_NEXT_LINE);
+		driveRequestAllowDenied(REQ_BEG_LINE);
 		// Посимвольная вставка текста.
 		putText(text);
 	}
