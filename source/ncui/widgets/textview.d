@@ -178,7 +178,7 @@ private:
 		ncuiLibNotErr!field_opts_off(_fieldText, O_AUTOSKIP);
 		ncuiLibNotErr!field_opts_on(_fieldText, O_WRAP);
 
-		_form = ncuiNotNull!new_form(cast(FIELD**) _fields);
+		_form = ncuiNotNull!new_form(_fields.ptr);
 
 		ncuiLibNotErr!set_form_win(_form, window.handle());
 		ncuiLibNotErr!set_form_sub(_form, _window);
