@@ -10,6 +10,7 @@
 	},
 	"libs": [
 		"form",
-		"panel"
+		"panel",
+		"menu"
 	]
 }

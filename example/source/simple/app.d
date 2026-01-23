@@ -37,9 +37,23 @@ final class Simple : ScreenBase
 
 		import std.file : readText;
 
-		auto textview = new TextView(10, 2, 50, 3, readText("example/text"));
+		auto textview = new TextView(10, 2, 50, 6, readText("example/text"));
 
-		textview.append("Append text.");
+		textview.append("Append text 1.");
+		textview.append("Append text 2.");
+
+		auto menu = new Menu(16, 2, 50, 6,
+			[
+				MenuLabel("Один", "Первый элемент"),
+				MenuLabel("Два", "Второй элемент"),
+				MenuLabel("Три", "Третий элемент"),
+				MenuLabel("Четыре", "Четвертый элемент")
+			],
+			(index, label) {
+			disableOk.toggle();
+			textview.append(label);
+			return ScreenAction.none();
+		});
 
 		_ui.add(okBtn);
 		_ui.add(cancelBtn);
@@ -49,6 +63,7 @@ final class Simple : ScreenBase
 		_ui.add(textBox3);
 		_ui.add(textBox4);
 		_ui.add(textview);
+		_ui.add(menu);
 	}
 
 	override ScreenAction handleGlobal(ScreenContext context, KeyEvent event)
