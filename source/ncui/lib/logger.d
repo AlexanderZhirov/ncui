@@ -10,7 +10,16 @@ public import std.logger : LogLevel,
 	critical, criticalf,
 	fatal, fatalf;
 
-void setLogLevel(int verbose = LogLevel.all, string logfile = string.init)
+enum LogType : int
+{
+	terminal,
+	file,
+	all
+}
+
+void setLogLevel(int verbose = LogLevel.all,
+	LogType type = LogType.terminal,
+	string logfile = string.init)
 {
 	LogLevel level = LogLevel.off;
 
@@ -38,9 +47,30 @@ void setLogLevel(int verbose = LogLevel.all, string logfile = string.init)
 	auto multi = new MultiLogger(level);
 	sharedLog = cast(shared) multi;
 
-	if (logfile.length > 0)
+	void setupTerminal()
 	{
-		multi.insertLogger("file", new FileLogger(logfile));
+		multi.insertLogger("stderr", new FileLogger(stderr));
 	}
-	multi.insertLogger("stderr", new FileLogger(stderr));
+
+	void setupFile()
+	{
+		if (logfile.length > 0)
+		{
+			multi.insertLogger("file", new FileLogger(logfile));
+		}
+	}
+
+	final switch (type)
+	{
+	case LogType.terminal:
+		setupTerminal();
+		break;
+	case LogType.file:
+		setupFile();
+		break;
+	case LogType.all:
+		setupTerminal();
+		setupFile();
+		break;
+	}
 }
