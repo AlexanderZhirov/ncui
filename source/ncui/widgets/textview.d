@@ -31,10 +31,13 @@ private:
 	// Устанавливаемый текст.
 	dstring _text;
 
+	bool _border = true;
+
 	FIELD* _fieldText;
 	FIELD*[2] _fields;
 	FORM* _form;
 	NCWin _window;
+	NCWin _windowBorder;
 
 	int driveRequestAllowDenied(int request)
 	{
@@ -168,9 +171,17 @@ private:
 			return;
 		}
 
-		_window = ncuiNotNull!derwin(window.handle(), _height, _width, _y, _x);
+		// Окно с рамкой.
+		_windowBorder = ncuiNotNull!derwin(window.handle(), _height, _width, _y, _x);
 
-		_fieldText = ncuiNotNull!new_field(_height, _width, 0, 0, 0, 0);
+		const int innerH = _border ? _height - 2 : _height;
+		const int innerW = _border ? _width - 2 : _width;
+		const int offY = _border ? 1 : 0;
+		const int offX = _border ? 1 : 0;
+
+		_window = ncuiNotNull!derwin(_windowBorder, innerH, innerW, offY, offX);
+
+		_fieldText = ncuiNotNull!new_field(innerH, innerW, 0, 0, 0, 0);
 		_fields[0] = _fieldText;
 		_fields[1] = null;
 
@@ -182,7 +193,7 @@ private:
 
 		_form = ncuiNotNull!new_form(_fields.ptr);
 
-		ncuiLibNotErr!set_form_win(_form, window.handle());
+		ncuiLibNotErr!set_form_win(_form, _windowBorder);
 		ncuiLibNotErr!set_form_sub(_form, _window);
 
 		// ncuiLibNotErr!field_opts_off(_fieldText, O_EDIT);
@@ -196,15 +207,25 @@ private:
 	}
 
 public:
-	this(int y, int x, int width, int height, string text = string.init, int bufferSize = 64 * 1024)
+	this(int y, int x, int width, int height, string text = string.init, bool border = true, int bufferSize = 64 * 1024)
 	{
-		ncuiExpectMsg!((int w) => w > 0)("TextView.width must be > 0", true, width);
-		ncuiExpectMsg!((int h) => h > 0)("TextView.height must be > 0", true, height);
+		if (border)
+		{
+			ncuiExpectMsg!((int h) => h >= 3)("TextView.height must be >= 3 when border=true", true, height);
+			ncuiExpectMsg!((int w) => w >= 3)("TextView.width must be >= 3 when border=true", true, width);
+		}
+		else
+		{
+			ncuiExpectMsg!((int w) => w > 0)("TextView.width must be > 0", true, width);
+			ncuiExpectMsg!((int h) => h > 0)("TextView.height must be > 0", true, height);
+		}
 
 		_y = y;
 		_x = x;
 		_width = width;
 		_height = height;
+
+		_border = border;
 
 		_bufferSize = bufferSize > 0 ? bufferSize : 1024;
 		_text = text.toUTF32;
@@ -249,6 +270,10 @@ public:
 	override void render(Window window, ScreenContext context, bool focused)
 	{
 		ensureCreated(window);
+		if (_border)
+		{
+			ncuiNotErr!box(_windowBorder, 0, 0);
+		}
 	}
 
 	override ScreenAction handle(ScreenContext context, KeyEvent event)
@@ -307,6 +332,12 @@ public:
 		{
 			ncuiNotErr!delwin(_window);
 			_window = NCWin(null);
+		}
+
+		if (!_windowBorder.isNull)
+		{
+			ncuiLibNotErr!delwin(_windowBorder);
+			_windowBorder = NCWin(null);
 		}
 
 		_inited = false;
