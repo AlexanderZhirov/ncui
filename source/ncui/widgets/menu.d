@@ -1,0 +1,241 @@
+module ncui.widgets.menu;
+
+import deimos.menu;
+
+import ncui.widgets.widget;
+import ncui.core.ncwin;
+import ncui.core.window;
+import ncui.core.event;
+import ncui.engine.screen;
+import ncui.engine.action;
+import ncui.lib.checks;
+
+import std.utf : toUTF32, toUTF8;
+import std.string : toStringz, fromStringz;
+import std.algorithm : min;
+
+alias AcceptCallback = ScreenAction delegate(size_t index, string label);
+
+struct MenuLabel
+{
+	string name;
+	string description;
+}
+
+final class Menu : IWidget, IWidgetClosable
+{
+private:
+	// Поле по умолчанию активно.
+	bool _enabled = true;
+
+	int _y;
+	int _x;
+	int _width;
+	int _height;
+
+	bool _border = true;
+	bool _inited;
+
+	MenuLabel[] _labels;
+	const (char)* _mark = " > ".ptr;
+
+	NCWin _window;
+	NCWin _windowBorder;
+	MENU* _menu;
+	ITEM*[] _items;
+
+	AcceptCallback _accept;
+
+	size_t selectedIndex() const
+	{
+		if (_labels.length == 0 || _menu is null)
+		{
+			return 0;
+		}
+
+		ITEM* item = current_item(_menu);
+
+		if (item is null)
+		{
+			return 0;
+		}
+
+		return min(item_index(item), cast(int) _labels.length - 1);
+	}
+
+	int driveAllowDenied(int request)
+	{
+		return ncuiLibNotErrAny!menu_driver([E_OK, E_REQUEST_DENIED], _menu, request);
+	}
+
+	void ensureCreated(Window window)
+	{
+		if (_inited)
+		{
+			return;
+		}
+
+		// Окно с рамкой.
+		_windowBorder = ncuiNotNull!derwin(window.handle(), _height, _width, _y, _x);
+
+		const int innerH = _border ? _height - 2 : _height;
+		const int innerW = _border ? _width - 2 : _width;
+		const int offY = _border ? 1 : 0;
+		const int offX = _border ? 1 : 0;
+
+		// Создание внутреннего окна.
+		_window = ncuiNotNull!derwin(_windowBorder, innerH, innerW, offY, offX);
+		// +1 для null строки.
+		_items.length = _labels.length + 1;
+
+		foreach (index, label; _labels)
+		{
+			_items[index] = new_item(label.name.toStringz, label.description.toStringz);
+		}
+
+		_items[_labels.length] = null;
+
+		_menu = new_menu(_items.ptr);
+
+		ncuiLibNotErr!set_menu_win(_menu, _windowBorder);
+		ncuiLibNotErr!set_menu_sub(_menu, _window);
+		ncuiLibNotErr!set_menu_format(_menu, innerH, 1);
+
+		set_menu_mark(_menu, _mark);
+		// Публикация формы.
+		ncuiLibNotErrAny!post_menu([E_OK, E_POSTED], _menu);
+
+		_inited = true;
+	}
+
+public:
+	this(int y, int x, int width, int height, MenuLabel[] labels, AcceptCallback accept, bool border = true)
+	{
+		if (border)
+		{
+			ncuiExpectMsg!((int w) => w > 3)("Menu.width must be >= 3 when border=true", true, width);
+			ncuiExpectMsg!((int h) => h > 3)("Menu.height must be >= 3 when border=true", true, height);
+		}
+		else
+		{
+			ncuiExpectMsg!((int w) => w > 0)("Menu.width must be > 0", true, width);
+			ncuiExpectMsg!((int h) => h > 0)("Menu.height must be > 0", true, height);
+		}
+		ncuiExpectMsg!((MenuLabel[] l) => l.length > 0)("Menu.labels must not be empty", true, labels);
+		ncuiExpectMsg!((AcceptCallback f) => f !is null)("Menu.accept must not be null", true, accept);
+
+		_y = y;
+		_x = x;
+		_width = width;
+		_height = height;
+		_accept = accept;
+		_border = border;
+
+		// Хранение исходных наименований.
+		_labels = labels;
+	}
+
+	override @property bool focusable()
+	{
+		return true;
+	}
+
+	override @property bool enabled()
+	{
+		return _enabled;
+	}
+
+	override void render(Window window, ScreenContext context, bool focused)
+	{
+		ensureCreated(window);
+
+		if (_border)
+		{
+			ncuiNotErr!box(_windowBorder, 0, 0);
+		}
+	}
+
+	override ScreenAction handle(ScreenContext context, KeyEvent event)
+	{
+		if (!_enabled || _menu is null)
+		{
+			return ScreenAction.none();
+		}
+
+		if (event.isEnter)
+		{
+			if (_accept is null)
+			{
+				return ScreenAction.none();
+			}
+
+			const auto index = selectedIndex();
+			return _accept(index, _labels[index].name);
+		}
+
+		if (!event.isKeyCode)
+		{
+			return ScreenAction.none();
+		}
+
+		switch (event.ch)
+		{
+		case KEY_UP:
+			driveAllowDenied(REQ_UP_ITEM);
+			break;
+		case KEY_DOWN:
+			driveAllowDenied(REQ_DOWN_ITEM);
+			break;
+		case KEY_HOME:
+			driveAllowDenied(REQ_FIRST_ITEM);
+			break;
+		case KEY_END:
+			driveAllowDenied(REQ_LAST_ITEM);
+			break;
+		default:
+			break;
+		}
+
+		return ScreenAction.none();
+	}
+
+	override void close()
+	{
+		if (_menu !is null)
+		{
+			ncuiLibNotErrAny!unpost_menu([E_OK, E_NOT_POSTED], _menu);
+			ncuiLibNotErr!free_menu(_menu);
+			_menu = null;
+		}
+
+		foreach (item; _items)
+		{
+			if (item !is null)
+			{
+				ncuiLibNotErr!free_item(item);
+			}
+		}
+
+		_items.length = 0;
+		_labels.length = 0;
+
+		if (!_window.isNull)
+		{
+			ncuiLibNotErr!delwin(_window);
+			_window = NCWin(null);
+		}
+
+		if (!_windowBorder.isNull)
+		{
+			ncuiLibNotErr!delwin(_windowBorder);
+			_windowBorder = NCWin(null);
+		}
+
+		_inited = false;
+	}
+
+	~this()
+	{
+		close();
+	}
+}
