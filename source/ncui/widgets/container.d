@@ -104,9 +104,17 @@ public:
 	// Отрисовка виджетов.
 	void render(Window window, ScreenContext context)
 	{
-		foreach (i, child; _children)
+		foreach (index, child; _children)
 		{
-			child.render(window, context, i == _focus);
+			child.render(window, context, index == _focus);
+		}
+
+		if (_focus >= 0 && _focus < _children.length)
+		{
+			if (auto child = cast(ICursorOwner) _children[_focus])
+			{
+				child.placeCursor(context);
+			}
 		}
 	}
 
