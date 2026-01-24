@@ -31,6 +31,11 @@ interface IWidgetClosable
 	void close();
 }
 
+interface ICursorOwner
+{
+	void placeCursor(ScreenContext context);
+}
+
 // Обработка стандартных нажатий клавиш.
 
 bool isTab(KeyEvent ev)
