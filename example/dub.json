@@ -1,16 +1,32 @@
 {
 	"name": "example",
-	"targetName": "example",
 	"targetType": "executable",
+	"targetName": "example",
 	"targetPath": "../bin",
 	"dependencies": {
 		"ncui": {
 			"path": ".."
 		}
 	},
-	"libs": [
-		"form",
-		"panel",
-		"menu"
+	"configurations": [
+		{
+			"name": "default",
+			"libs": [
+				"form",
+				"panel",
+				"menu"
+			]
+		},
+		{
+			"name": "debian",
+			"libs": [
+				"formw",
+				"panelw",
+				"menuw"
+			],
+			"preBuildCommands": [
+				"apt install libncurses-dev -y"
+			]
+		}
 	]
 }
