@@ -45,8 +45,16 @@ bool isTab(KeyEvent ev)
 
 bool isEnter(KeyEvent ev)
 {
-	if (ev.isChar && (ev.ch == '\n' || ev.ch == '\r')) return true;
-	if (ev.isKeyCode && cast(int)ev.ch == 343) return true; // KEY_ENTER часто 343
+	if (ev.isChar && (ev.ch == '\n' || ev.ch == '\r'))
+	{
+		return true;
+	}
+
+	if (ev.isKeyCode && cast(int) ev.ch == 343)
+	{
+		return true; // KEY_ENTER часто 343
+	}
+
 	return false;
 }
 
