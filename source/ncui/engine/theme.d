@@ -52,6 +52,7 @@ enum StyleId
 	TextBoxInputInactive,
 
 	TextView,
+	TextViewActive,
 	TextViewInactive,
 
 	MenuItem,
@@ -90,11 +91,12 @@ enum PairSlot : short
 	TextBoxInputInactive = 17,
 	// Поле просмотра текста.
 	TextView = 18,
-	TextViewInactive = 19,
+	TextViewActive = 19,
+	TextViewInactive = 20,
 	// Пункт меню.
-	MenuItem = 20,
-	MenuItemActive = 21,
-	MenuItemInactive = 22,
+	MenuItem = 21,
+	MenuItemActive = 22,
+	MenuItemInactive = 23,
 }
 
 /**
@@ -200,6 +202,7 @@ final class DefaultTheme : ITheme
 		newPair(PairSlot.TextBoxInputInactive, COLOR_WHITE, -1);
 
 		newPair(PairSlot.TextView, COLOR_WHITE, -1);
+		newPair(PairSlot.TextViewActive, COLOR_WHITE, -1);
 		newPair(PairSlot.TextViewInactive, COLOR_WHITE, -1);
 
 		newPair(PairSlot.MenuItem, COLOR_WHITE, -1);
@@ -272,6 +275,8 @@ final class DefaultTheme : ITheme
 			// Поле просмотра текста.
 		case StyleId.TextView:
 			return Style(PairSlot.TextView, 0);
+		case StyleId.TextViewActive:
+			return Style(PairSlot.TextViewActive, 0);
 		case StyleId.TextViewInactive:
 			return Style(PairSlot.TextViewInactive, A_DIM);
 
@@ -320,6 +325,7 @@ final class DarkTheme : ITheme
 		newPair(PairSlot.TextBoxInputInactive, COLOR_WHITE, COLOR_BLACK);
 
 		newPair(PairSlot.TextView, COLOR_WHITE, COLOR_BLACK);
+		newPair(PairSlot.TextViewActive, COLOR_WHITE, COLOR_BLACK);
 		newPair(PairSlot.TextViewInactive, COLOR_WHITE, COLOR_BLACK);
 
 		newPair(PairSlot.MenuItem, COLOR_WHITE, COLOR_BLACK);
@@ -392,6 +398,8 @@ final class DarkTheme : ITheme
 			// Поле просмотра текста.
 		case StyleId.TextView:
 			return Style(PairSlot.TextView, 0);
+		case StyleId.TextViewActive:
+			return Style(PairSlot.TextViewActive, 0);
 		case StyleId.TextViewInactive:
 			return Style(PairSlot.TextViewInactive, A_DIM);
 
@@ -435,6 +443,7 @@ final class LightTheme : ITheme
 		newPair(PairSlot.TextBoxInputInactive, COLOR_BLUE, COLOR_WHITE);
 
 		newPair(PairSlot.TextView, COLOR_BLACK, COLOR_WHITE);
+		newPair(PairSlot.TextViewActive, COLOR_BLACK, COLOR_WHITE);
 		newPair(PairSlot.TextViewInactive, COLOR_BLACK, COLOR_WHITE);
 
 		newPair(PairSlot.MenuItem, COLOR_BLACK, COLOR_WHITE);
@@ -507,6 +516,8 @@ final class LightTheme : ITheme
 			// Поле просмотра текста.
 		case StyleId.TextView:
 			return Style(PairSlot.TextView, 0);
+		case StyleId.TextViewActive:
+			return Style(PairSlot.TextViewActive, 0);
 		case StyleId.TextViewInactive:
 			return Style(PairSlot.TextViewInactive, A_DIM);
 
