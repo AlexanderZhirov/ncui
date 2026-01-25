@@ -7,7 +7,7 @@ import ncui.core.session;
 import ncui.core.event;
 import ncui.core.ncwin;
 import ncui.core.window;
-
+import ncui.engine.theme;
 import ncui.engine.action;
 
 /**
@@ -16,10 +16,12 @@ import ncui.engine.action;
 struct ScreenContext
 {
 	Session session;
+	ThemeManager theme;
 
-	this(Session s)
+	this(Session s, ThemeManager tm)
 	{
 		session = s;
+		theme = tm;
 	}
 }
 
