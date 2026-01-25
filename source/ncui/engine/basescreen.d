@@ -6,6 +6,7 @@ import ncui.core.panel;
 import ncui.core.event;
 import ncui.engine.screen;
 import ncui.engine.action;
+import ncui.engine.theme;
 import ncui.widgets.container;
 
 abstract class ScreenBase : IScreen
@@ -36,6 +37,8 @@ private:
 		import ncui.lib.checks;
 
 		curs_set(context.session.settings.cursor);
+
+		_window.setBackground(context.theme.attr(StyleId.WindowBackground));
 
 		layout(context, _window, _ui);
 		_ui.render(_window, context);
