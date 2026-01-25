@@ -5,6 +5,7 @@ import ncui.core.window;
 import ncui.core.event;
 import ncui.engine.screen;
 import ncui.engine.action;
+import ncui.engine.theme;
 
 // Опциональное действие, выполняемое при нажатии на кнопку.
 alias OnClick = ScreenAction delegate();
@@ -21,12 +22,14 @@ private:
 	int _x;
 	// Надпись кнопки.
 	string _text;
+	string _decor;
 public:
 	this(int y, int x, string text, OnClick onClick = null)
 	{
 		_y = y;
 		_x = x;
 		_text = text;
+		_decor = "[ " ~ text ~ " ]";
 		_onClick = onClick;
 	}
 
@@ -42,9 +45,22 @@ public:
 
 	override void render(Window window, ScreenContext context, bool focused)
 	{
-		window.put(_y, _x, focused ? "* " : "[ ");
-		window.put(_y, _x + 2, _text);
-		window.put(_y, _x + 2 + cast(int) _text.length, focused ? " *" : " ]");
+		StyleId sid;
+
+		if (!_enabled)
+		{
+			sid = StyleId.ButtonInactive;
+		}
+		else if (focused)
+		{
+			sid = StyleId.ButtonActive;
+		}
+		else
+		{
+			sid = StyleId.Button;
+		}
+
+		window.putAttr(_y, _x, _decor, context.theme.attr(sid));
 	}
 
 	override ScreenAction handle(ScreenContext context, KeyEvent event)
@@ -64,6 +80,11 @@ public:
 		}
 
 		return ScreenAction.none();
+	}
+
+	@property int width()
+	{
+		return cast(int) _decor.length;
 	}
 
 	void onClick(OnClick callback)
