@@ -1,6 +1,7 @@
 module ncui.widgets.menu;
 
 import deimos.menu;
+import deimos.ncurses;
 
 import ncui.widgets.widget;
 import ncui.core.ncwin;
@@ -8,6 +9,7 @@ import ncui.core.window;
 import ncui.core.event;
 import ncui.engine.screen;
 import ncui.engine.action;
+import ncui.engine.theme;
 import ncui.lib.checks;
 
 import std.utf : toUTF32, toUTF8;
@@ -67,6 +69,38 @@ private:
 	{
 		return ncuiLibNotErrAny!menu_driver([E_OK, E_REQUEST_DENIED], _menu, request);
 	}
+
+	void applyMenuTheme(ScreenContext context, bool focused)
+	{
+		if (_menu !is null)
+		{
+			const int backAttr = context.theme.attr(StyleId.MenuItem);
+			const int foreAttr = context.theme.attr(focused ? StyleId.MenuItemActive : StyleId.MenuItem);
+			const int greyAttr = context.theme.attr(StyleId.MenuItemInactive);
+
+			ncuiLibNotErr!set_menu_back(_menu, backAttr);
+			ncuiLibNotErr!set_menu_fore(_menu, foreAttr);
+			ncuiLibNotErr!set_menu_grey(_menu, greyAttr);
+		}
+
+		if (_border)
+		{
+			const int a = context.theme.attr(focused ? StyleId.BorderActive : StyleId.BorderInactive);
+
+			if (a != 0)
+			{
+				ncuiNotErr!wattron(_windowBorder, a);
+			}
+
+			scope (exit)
+			{
+				if (a != 0) ncuiNotErr!wattroff(_windowBorder, a);
+			}
+
+			ncuiNotErr!box(_windowBorder, 0, 0);
+		}
+	}
+
 
 	void ensureCreated(Window window)
 	{
@@ -148,11 +182,7 @@ public:
 	override void render(Window window, ScreenContext context, bool focused)
 	{
 		ensureCreated(window);
-
-		if (_border)
-		{
-			ncuiNotErr!box(_windowBorder, 0, 0);
-		}
+		applyMenuTheme(context, focused);
 	}
 
 	override ScreenAction handle(ScreenContext context, KeyEvent event)
