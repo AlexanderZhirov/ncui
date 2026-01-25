@@ -56,6 +56,29 @@ public:
 		ncuiNotErr!mvwaddnstr(_window, y, x, s.toStringz, s.length.to!int);
 	}
 
+	void putAttr(int y, int x, string s, int attr)
+	{
+		if (attr != 0)
+		{
+			ncuiNotErr!wattron(_window, attr);
+		}
+
+		scope(exit)
+		{
+			if (attr != 0)
+			{
+				ncuiNotErr!wattroff(_window, attr);
+			}
+		}
+
+		put(y, x, s);
+	}
+
+	void setBackground(int attr)
+	{
+		wbkgd(_window, cast(chtype)(' ') | cast(chtype)attr);
+	}
+
 	@property NCWin handle()
 	{
 		return _window;
