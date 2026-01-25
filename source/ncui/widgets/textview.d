@@ -1,6 +1,7 @@
 module ncui.widgets.textview;
 
 import deimos.form;
+import deimos.ncurses;
 
 import ncui.widgets.widget;
 import ncui.core.window;
@@ -8,6 +9,7 @@ import ncui.core.event;
 import ncui.core.ncwin;
 import ncui.engine.screen;
 import ncui.engine.action;
+import ncui.engine.theme;
 import ncui.lib.checks;
 
 import std.utf : toUTF32;
@@ -57,18 +59,24 @@ private:
 
 	void scrollByLines(int deltaLines)
 	{
-		if (!_inited || deltaLines == 0) return;
+		if (!_inited || deltaLines == 0)
+		{
+			return;
+		}
 
 		driveRepeat(deltaLines > 0 ? REQ_SCR_FLINE : REQ_SCR_BLINE,
-					cast(uint)(deltaLines > 0 ? deltaLines : -deltaLines));
+			cast(uint)(deltaLines > 0 ? deltaLines : -deltaLines));
 	}
 
 	void scrollByPages(int deltaPages)
 	{
-		if (!_inited || deltaPages == 0) return;
+		if (!_inited || deltaPages == 0)
+		{
+			return;
+		}
 
 		driveRepeat(deltaPages > 0 ? REQ_SCR_FPAGE : REQ_SCR_BPAGE,
-					cast(uint)(deltaPages > 0 ? deltaPages : -deltaPages));
+			cast(uint)(deltaPages > 0 ? deltaPages : -deltaPages));
 	}
 
 	void scrollToTop()
@@ -164,7 +172,30 @@ private:
 		driveRequestAllowDenied(REQ_BEG_LINE);
 	}
 
-	void ensureCreated(Window window)
+	void setupTheme(ScreenContext context, bool focused)
+	{
+		StyleId style;
+
+		if (!_enabled)
+		{
+			style = StyleId.TextViewInactive;
+		}
+		else if (focused)
+		{
+			style = StyleId.TextViewActive;
+		}
+		else
+		{
+			style = StyleId.TextView;
+		}
+
+		auto attr = context.theme.attr(style);
+
+		ncuiLibNotErr!set_field_fore(_fieldText, attr);
+		ncuiLibNotErr!set_field_back(_fieldText, attr);
+	}
+
+	void ensureCreated(Window window, ScreenContext context)
 	{
 		if (_inited)
 		{
@@ -196,14 +227,40 @@ private:
 		ncuiLibNotErr!set_form_win(_form, _windowBorder);
 		ncuiLibNotErr!set_form_sub(_form, _window);
 
-		// ncuiLibNotErr!field_opts_off(_fieldText, O_EDIT);
-
 		ncuiLibNotErrAny!post_form([E_OK, E_POSTED], _form);
+
+		setupTheme(context, false);
 
 		// Заполнение поля текстом.
 		fillField();
 
 		_inited = true;
+	}
+
+	void applyTheme(ScreenContext context, bool focused)
+	{
+		if (_fieldText !is null)
+		{
+			setupTheme(context, focused);
+		}
+
+		if (_border)
+		{
+			const int attr = context.theme.attr(focused ? StyleId.BorderActive : StyleId.BorderInactive);
+
+			if (attr != 0)
+			{
+				ncuiNotErr!wattron(_windowBorder, attr);
+			}
+
+			scope (exit)
+			{
+				if (attr != 0)
+					ncuiNotErr!wattroff(_windowBorder, attr);
+			}
+
+			ncuiNotErr!box(_windowBorder, 0, 0);
+		}
 	}
 
 public:
@@ -269,11 +326,8 @@ public:
 
 	override void render(Window window, ScreenContext context, bool focused)
 	{
-		ensureCreated(window);
-		if (_border)
-		{
-			ncuiNotErr!box(_windowBorder, 0, 0);
-		}
+		ensureCreated(window, context);
+		applyTheme(context, focused);
 	}
 
 	override ScreenAction handle(ScreenContext context, KeyEvent event)
