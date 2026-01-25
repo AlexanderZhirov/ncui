@@ -6,25 +6,24 @@ import deimos.ncurses;
 
 final class Simple : ScreenBase
 {
-	override void ensureWindow(ScreenContext context)
+	override Window ensureWindow(ScreenContext context)
 	{
 		int height = getmaxy(context.session.root());
 		int width = getmaxx(context.session.root());
 
-		_window = new Window(height, width, 0, 0);
-		_panel = new Panel(_window.handle());
+		return new Window(height, width, 0, 0);
 	}
 
-	override void layout(ScreenContext context, Window window, WidgetContainer ui)
+	override void layout(Window window, ScreenContext context)
 	{
 		_window.border();
 		_window.put(1, 2, "Пример простого скрина с кнопками");
 	}
 
-	override void build(ScreenContext context, Window window, WidgetContainer ui)
+	override void build(Window window, ScreenContext context, WidgetContainer ui)
 	{
 		auto okBtn = new Button(3, 2, "OK", () => ScreenAction.push(new Simple()));
-		auto cancelBtn = new Button(3, 9, "Cancel", () => ScreenAction.pop(ScreenResult.none()));
+		auto cancelBtn = new Button(3, okBtn.width + 3, "Cancel", () => ScreenAction.pop(ScreenResult.none()));
 
 		auto textBox1 = new TextBox(5, 11, 30, true, "Фамилия");
 		auto textBox2 = new TextBox(6, 9, 30, false, "Кириллица", "Простой тест", r"^[А-Яа-я]$");
@@ -50,7 +49,7 @@ final class Simple : ScreenBase
 				MenuLabel("Четыре", "Четвертый элемент")
 			],
 			(index, label) {
-			disableOk.toggle();
+			// disableOk.toggle();
 			textview.append(label);
 			return ScreenAction.none();
 		});
