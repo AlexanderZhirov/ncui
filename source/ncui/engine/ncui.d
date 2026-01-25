@@ -10,6 +10,7 @@ import ncui.lib.logger;
 import ncui.core.session;
 import ncui.engine.screen;
 import ncui.engine.action;
+import ncui.engine.theme;
 
 final class NCUI
 {
@@ -24,6 +25,7 @@ private:
 	bool _running;
 	// Конечный результат выполнения.
 	ScreenResult _result;
+	ThemeManager _theme;
 
 	// Извлечение из стека указанное количество экранов.
 	void popMany(int screenCount)
@@ -136,10 +138,11 @@ private:
 	}
 
 public:
-	this(const SessionConfig config = SessionConfig.init)
+	this(const SessionConfig config = SessionConfig.init, ITheme initialTheme = null)
 	{
 		_session = new Session(config);
-		_context = ScreenContext(_session);
+		_theme = new ThemeManager(initialTheme);
+		_context = ScreenContext(_session, _theme);
 	}
 
 	ScreenResult run(IScreen screen)
