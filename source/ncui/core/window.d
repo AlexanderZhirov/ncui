@@ -79,6 +79,11 @@ public:
 		wbkgd(_window, cast(chtype)(' ') | cast(chtype)attr);
 	}
 
+	void setCursor(int cursor)
+	{
+		ncuiNotErr!curs_set(cursor);
+	}
+
 	@property NCWin handle()
 	{
 		return _window;
