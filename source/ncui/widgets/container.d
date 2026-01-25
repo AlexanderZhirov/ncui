@@ -38,7 +38,9 @@ public:
 
 		// Если фокуса ещё нет — дать первому фокусируемому/включенному.
 		if (_focus < 0 && widget.focusable && widget.enabled)
+		{
 			_focus = index;
+		}
 	}
 
 	// Текущий индекс фокуса (или -1).
@@ -50,15 +52,17 @@ public:
 	// Установить фокус на виджет по индексу.
 	bool setFocus(int index)
 	{
-		if (index < 0)
+		if (index < 0 || index >= _children.length)
+		{
 			return false;
-
-		if (cast(size_t) index >= _children.length)
-			return false;
+		}
 
 		auto widget = _children[index];
+
 		if (!widget.focusable || !widget.enabled)
+		{
 			return false;
+		}
 
 		_focus = index;
 		return true;
@@ -69,7 +73,9 @@ public:
 	{
 		// Если нет элементов для фокуса.
 		if (_children.length == 0)
+		{
 			return false;
+		}
 
 		const int count = cast(int) _children.length;
 		// Точка начала текущего элемента.
@@ -130,7 +136,9 @@ public:
 
 		// Если фокуса нет или он вышел за границы.
 		if (_focus < 0 || _focus >= _children.length)
+		{
 			return ScreenAction.none();
+		}
 
 		// Иначе отдать ввод текущему виджету.
 		return _children[_focus].handle(context, event);
