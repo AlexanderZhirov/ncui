@@ -61,6 +61,15 @@ public:
 		_panel = NCPanel(null);
 	}
 
+	void update()
+	{
+		if (!_panel.isNull())
+		{
+			update_panels();
+			ncuiNotErr!doupdate();
+		}
+	}
+
 	~this()
 	{
 		close();
