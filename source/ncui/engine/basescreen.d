@@ -17,10 +17,10 @@ protected:
 	WidgetContainer _ui;
 	bool _built;
 
-	void ensureWindow(ScreenContext context);
+	Window ensureWindow(ScreenContext context);
 
-	void build(ScreenContext context, Window window, WidgetContainer ui);
-	void layout(ScreenContext context, Window window, WidgetContainer ui)
+	void build(Window window, ScreenContext context, WidgetContainer ui);
+	void layout(Window window, ScreenContext context)
 	{
 	}
 
@@ -30,53 +30,53 @@ protected:
 	}
 
 private:
-	void renderAll(ScreenContext context)
+	void render(ScreenContext context)
 	{
-		import deimos.panel : update_panels;
-		import deimos.ncurses : doupdate, curs_set;
-		import ncui.lib.checks;
-
-		curs_set(context.session.settings.cursor);
-
+		// Установка курсора по-умолчанию.
+		_window.setCursor(context.session.settings.cursor);
+		// Установка фона для окна.
 		_window.setBackground(context.theme.attr(StyleId.WindowBackground));
-
-		layout(context, _window, _ui);
+		// Отрисовка пользовтельского оформления окна.
+		layout(_window, context);
+		// Отрисовка виджетов.
 		_ui.render(_window, context);
-
-		update_panels();
-		ncuiNotErr!doupdate();
+		// Обновление панелей.
+		_panel.update();
 	}
 
 public:
-	this()
-	{
-		_ui = new WidgetContainer();
-	}
-
 	override NCWin inputWindow()
 	{
 		return _window.handle();
 	}
 
-	override ScreenAction onShow(ScreenContext context)
+	final override ScreenAction onShow(ScreenContext context)
 	{
-		if (_window is null || _panel is null)
+		if (_window is null)
 		{
-			ensureWindow(context);
+			_window = ensureWindow(context);
 		}
 
-		if (_panel !is null)
+		if (_ui is null)
 		{
-			_panel.top();
+			_ui = new WidgetContainer();
+		}
+
+		if (_panel is null)
+		{
+			_panel = new Panel(_window.handle());
 		}
 
 		if (!_built)
 		{
-			build(context, _window, _ui);
+			build(_window, context, _ui);
 			_built = true;
 		}
 
-		renderAll(context);
+		_panel.top();
+
+		render(context);
+
 		return ScreenAction.none();
 	}
 
@@ -85,7 +85,7 @@ public:
 		return ScreenAction.none();
 	}
 
-	override ScreenAction handle(ScreenContext context, KeyEvent event)
+	final override ScreenAction handle(ScreenContext context, KeyEvent event)
 	{
 		auto result = handleGlobal(context, event);
 
@@ -101,11 +101,12 @@ public:
 			return action;
 		}
 
-		renderAll(context);
+		render(context);
+
 		return ScreenAction.none();
 	}
 
-	override void close()
+	final override void close()
 	{
 		if (_ui !is null)
 		{
@@ -123,8 +124,13 @@ public:
 		}
 
 		_panel = null;
+		_ui = null;
 		_window = null;
 		_built = false;
-		_ui = new WidgetContainer();
+	}
+
+	~this()
+	{
+		close();
 	}
 }
