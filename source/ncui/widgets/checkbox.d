@@ -5,6 +5,7 @@ import ncui.core.event;
 import ncui.core.window;
 import ncui.engine.screen;
 import ncui.engine.action;
+import ncui.engine.theme;
 
 alias OnChange = void delegate(bool checked);
 
@@ -74,9 +75,31 @@ public:
 
 	override void render(Window window, ScreenContext context, bool focused)
 	{
+		StyleId sid;
+
+		if (!_enabled)
+		{
+			sid = StyleId.CheckboxInactive;
+		}
+		else if (focused)
+		{
+			sid = StyleId.CheckboxActive;
+		}
+		else
+		{
+			sid = StyleId.Checkbox;
+		}
+
 		const string mark = _checked ? "x" : " ";
-		string checkbox = (focused ? "*" : "[") ~ mark ~ (focused ? "* " : "] ") ~ _label;
-		window.put(_y, _x, checkbox);
+		const string decor = "[" ~ mark ~ "]";
+
+		window.putAttr(_y, _x, decor, context.theme.attr(sid));
+		window.put(_y, _x + 4, _label);
+	}
+
+	@property int width()
+	{
+		return cast(int) _label.length + 4;
 	}
 
 	override ScreenAction handle(ScreenContext context, KeyEvent event)
