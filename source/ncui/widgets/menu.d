@@ -124,12 +124,12 @@ private:
 
 		foreach (index, label; _labels)
 		{
-			_items[index] = new_item(label.name.toStringz, label.description.toStringz);
+			_items[index] = ncuiNotNull!new_item(label.name.toStringz, label.description.toStringz);
 		}
 
 		_items[_labels.length] = null;
 
-		_menu = new_menu(_items.ptr);
+		_menu = ncuiNotNull!new_menu(_items.ptr);
 
 		ncuiLibNotErr!set_menu_win(_menu, _windowBorder);
 		ncuiLibNotErr!set_menu_sub(_menu, _window);
