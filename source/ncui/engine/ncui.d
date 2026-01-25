@@ -31,7 +31,9 @@ private:
 	void popMany(int screenCount)
 	{
 		if (screenCount < 1)
+		{
 			screenCount = 1;
+		}
 
 		for (int i = 0; i < screenCount && _stack.length != 0; ++i)
 		{
@@ -165,13 +167,17 @@ public:
 		}
 
 		// Завершить сессию ncurses.
-		_session.close();
+		stop();
+
 		return _result;
 	}
 
 	void stop()
 	{
-		popMany(cast(int) _stack.length);
+		if (_stack.length > 0)
+		{
+			popMany(cast(int) _stack.length);
+		}
 
 		if (_session !is null)
 		{
