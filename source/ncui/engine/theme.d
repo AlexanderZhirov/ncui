@@ -438,7 +438,7 @@ final class LightTheme : ITheme
 		newPair(PairSlot.TextBoxLabel, COLOR_BLACK, COLOR_WHITE);
 		newPair(PairSlot.TextBoxLabelInactive, COLOR_BLUE, COLOR_WHITE);
 
-		newPair(PairSlot.TextBoxInput, COLOR_BLACK, COLOR_WHITE);
+		newPair(PairSlot.TextBoxInput, COLOR_BLACK, COLORS > 8 ? COLOR_WHITE : COLOR_CYAN);
 		newPair(PairSlot.TextBoxInputActive, COLOR_WHITE, COLOR_BLUE);
 		newPair(PairSlot.TextBoxInputInactive, COLOR_BLUE, COLOR_WHITE);
 
