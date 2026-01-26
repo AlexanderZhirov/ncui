@@ -13,17 +13,17 @@ struct KeyEvent
 		this.ch = ch;
 	}
 
-	bool isKeyCode() const
+	@property bool isKeyCode() const
 	{
 		return status == KEY_CODE_YES;
 	}
 
-	bool isChar() const
+	@property bool isChar() const
 	{
 		return status == OK;
 	}
 
-	bool isErr() const
+	@property bool isErr() const
 	{
 		return status == ERR;
 	}
