@@ -1,5 +1,7 @@
 module ncui;
 
+public import ncui.version_;
+
 // Модули ядра
 public import ncui.core.session;
 public import ncui.core.event;
