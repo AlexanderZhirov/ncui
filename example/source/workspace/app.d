@@ -1,7 +1,6 @@
 module workspace.app;
 
 import ncui;
-import ncui.widgets.widget;
 
 import deimos.ncurses;
 import simple;
@@ -61,7 +60,7 @@ public:
 		if (borderAttr != 0) wattron(w.handle(), borderAttr);
 		scope (exit) { if (borderAttr != 0) wattroff(w.handle(), borderAttr); }
 
-		w.border();
+		w.border(WindowBorder.top | WindowBorder.left | WindowBorder.bottom);
 		w.putAttr(0, 2, " FORM ", context.theme.attr(StyleId.Title));
 
 		w.put(1, 2, "Tab: next widget");
@@ -93,7 +92,7 @@ final class HelpBody : IViewBody
 		if (borderAttr != 0) wattron(w.handle(), borderAttr);
 		scope (exit) { if (borderAttr != 0) wattroff(w.handle(), borderAttr); }
 
-		// w.border();
+		w.border(WindowBorder.top | WindowBorder.right | WindowBorder.bottom);
 		w.putAttr(0, 2, " HELP ", context.theme.attr(StyleId.Title));
 
 		int y = 2;
@@ -133,7 +132,7 @@ final class DemoScreen : WorkspaceScreen
 		auto rightWin = new Window(H, rightW, 0, leftW);
 
 		ws.add(new View(leftWin,  new FormBody(), true));
-		ws.add(new View(rightWin, new HelpBody(), false));
+		ws.add(new View(rightWin, new HelpBody(), true));
 	}
 
 	override ScreenAction handleGlobal(ScreenContext context, KeyEvent event)
