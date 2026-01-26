@@ -125,13 +125,18 @@ public:
 			const bool focused = _active && (index == _focus);
 			child.render(window, context, focused);
 		}
+	}
 
-		if (_active && _focus >= 0 && _focus < _children.length)
+	void applyCursor(ScreenContext context)
+	{
+		if (!_active || _focus < 0 || _focus >= _children.length)
 		{
-			if (auto child = cast(ICursorOwner) _children[_focus])
-			{
-				child.placeCursor(context);
-			}
+			return;
+		}
+
+		if (auto child = cast(ICursorOwner) _children[_focus])
+		{
+			child.placeCursor(context);
 		}
 	}
 
@@ -168,7 +173,7 @@ public:
 	}
 
 	// Детерминировано закрыть виджеты.
-	void closeAll()
+	void close()
 	{
 		closeResources();
 		_children.length = 0;
