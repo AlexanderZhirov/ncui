@@ -22,6 +22,7 @@ public import ncui.engine.workspacescreen;
 public import ncui.lib.logger;
 
 // Виджеты
+public import ncui.widgets.widget;
 public import ncui.widgets.container;
 public import ncui.widgets.button;
 public import ncui.widgets.checkbox;
