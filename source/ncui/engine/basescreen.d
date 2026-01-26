@@ -29,6 +29,14 @@ protected:
 		return ScreenAction.none();
 	}
 
+	void doUpdate()
+	{
+		import deimos.ncurses : doupdate;
+		import ncui.lib.checks : ncuiNotErr;
+
+		ncuiNotErr!doupdate();
+	}
+
 private:
 	void render(ScreenContext context)
 	{
@@ -42,6 +50,10 @@ private:
 		_ui.render(_window, context);
 		// Обновление панелей.
 		_panel.update();
+		// Установка курсора активному виджету.
+		_ui.applyCursor(context);
+		// Применение изменений.
+		doUpdate();
 	}
 
 public:
@@ -121,7 +133,7 @@ public:
 	{
 		if (_ui !is null)
 		{
-			_ui.closeAll();
+			_ui.close();
 		}
 
 		if (_panel !is null)
