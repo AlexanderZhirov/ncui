@@ -24,10 +24,15 @@ final class TextBox : IWidget, IWidgetClosable, ICursorOwner
 private:
 	// Поле по умолчанию активно.
 	bool _enabled = true;
-	// Положение и ширина поля.
+	// Положение.
 	int _y;
 	int _x;
-	int _width;
+	// Ширина метки поля.
+	int _widthLabel;
+	// Ширина поля.
+	int _widthField;
+	// Общая ширина.
+	int _widthTotal;
 	// Метка поля.
 	dstring _label;
 	// Данные поля.
@@ -122,21 +127,16 @@ private:
 			return;
 		}
 
-		// Ширина метки поля.
-		int labelWidth = cast(int) _label.length;
-		// Общая ширина: ширина метки поля + отступ (1) + ширина поля ввода.
-		int totalWidth = (labelWidth > 0) ? (labelWidth + 1 + _width) : _width;
-
 		// Создание внутреннего окна.
-		_window = ncuiNotNull!derwin(window.handle(), 1, totalWidth, _y, _x);
+		_window = ncuiNotNull!derwin(window.handle(), 1, _widthTotal, _y, _x);
 		// Создание поля ввода.
-		_fieldInput = ncuiNotNull!new_field(1, _width, 0, totalWidth - _width, 0, 0);
+		_fieldInput = ncuiNotNull!new_field(1, _widthField, 0, _widthTotal - _widthField, 0, 0);
 
 		// Если метка поля была установлена.
-		if (labelWidth > 0)
+		if (_widthLabel > 0)
 		{
 			// Создание метки поля.
-			_fieldLabel = ncuiNotNull!new_field(1, labelWidth, 0, 0, 0, 0);
+			_fieldLabel = ncuiNotNull!new_field(1, _widthLabel, 0, 0, 0, 0);
 			// Установка опций для метки поля.
 			ncuiLibNotErr!set_field_opts(_fieldLabel, O_VISIBLE | O_PUBLIC | O_AUTOSKIP);
 			// Снять активность поля.
@@ -237,20 +237,27 @@ private:
 	}
 
 public:
-	this(int y, int x, int width, bool hidden,
+	this(int y, int x, int w, bool hidden,
 		string label = string.init,
 		string initText = string.init,
 		string mask = string.init)
 	{
 		// Ширина обязана быть ненулевой.
-		ncuiExpectMsg!((int w) => w > 0)("TextBox.width must be > 0", true, width);
+		ncuiExpectMsg!((int value) => value > 0)("TextBox.width must be > 0", true, w);
 
 		_y = y;
 		_x = x;
-		_width = width;
+
 		_label = label.length ? label.toUTF32 ~ ":" : "";
 		_text = initText.toUTF32;
 		_hidden = hidden;
+
+		// Ширина метки поля.
+		_widthLabel = cast(int) _label.length;
+		// Ширина поля ввода.
+		_widthField = w;
+		// Общая ширина: ширина метки поля + отступ (1) + ширина поля ввода.
+		_widthTotal = (_widthLabel > 0) ? (_widthLabel + 1 + _widthField) : _widthField;
 
 		if (mask.length)
 		{
@@ -264,6 +271,11 @@ public:
 
 		_length = _text.length;
 		_cursorPosition = _length;
+	}
+
+	@property int width()
+	{
+		return _widthTotal;
 	}
 
 	string text()
