@@ -66,7 +66,6 @@ public:
 		if (!_panel.isNull())
 		{
 			update_panels();
-			ncuiNotErr!doupdate();
 		}
 	}
 
