@@ -2,10 +2,15 @@ module simple.app;
 
 import ncui;
 
+import password;
+
 import deimos.ncurses;
 
 final class Simple : ScreenBase
 {
+private:
+	TextBox textBox1;
+public:
 	override Window ensureWindow(ScreenContext context)
 	{
 		int height = getmaxy(context.session.root());
@@ -22,10 +27,10 @@ final class Simple : ScreenBase
 
 	override void build(Window window, ScreenContext context, WidgetContainer ui)
 	{
-		auto okBtn = new Button(3, 2, "OK", () => ScreenAction.push(new Simple()));
+		auto okBtn = new Button(3, 2, "OK", () => ScreenAction.push(new Password()));
 		auto cancelBtn = new Button(3, okBtn.width + 3, "Cancel", () => ScreenAction.pop(ScreenResult.none()));
 
-		auto textBox1 = new TextBox(5, 11, 30, true, "Фамилия");
+		textBox1 = new TextBox(5, 12, 30, true, "Пароль");
 		auto textBox2 = new TextBox(6, 9, 30, false, "Кириллица", "Простой тест", r"^[А-Яа-я]$");
 		auto textBox3 = new TextBox(7, 10, 30, false, "Латиница", string.init, r"^[A-Za-z]$");
 		auto textBox4 = new TextBox(8, 2, 30, false, "Латиница + цифры", string.init, r"^[a-zA-Z0-9]$");
@@ -49,10 +54,11 @@ final class Simple : ScreenBase
 				MenuLabel("Четыре", "Четвертый элемент")
 			],
 			(index, label) {
-			// disableOk.toggle();
-			textview.append(label);
-			return ScreenAction.none();
-		});
+				textBox1.setText(label);
+				textview.append(label);
+				return ScreenAction.none();
+			}
+		);
 
 		_ui.add(okBtn);
 		_ui.add(cancelBtn);
@@ -63,6 +69,17 @@ final class Simple : ScreenBase
 		_ui.add(textBox4);
 		_ui.add(textview);
 		_ui.add(menu);
+	}
+
+	override ScreenAction onChildResult(ScreenContext context, ScreenResult child)
+	{
+		if (child.kind == ScreenKind.Ok && child.has!string)
+		{
+			textBox1.setText(child.get!string);
+			return ScreenAction.none();
+		}
+
+		return ScreenAction.none();
 	}
 
 	override ScreenAction handleGlobal(ScreenContext context, KeyEvent event)
