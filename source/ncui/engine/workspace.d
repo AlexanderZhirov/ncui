@@ -13,6 +13,7 @@ final class Workspace
 private:
 	View[] _views;
 	int _active = -1;
+	bool _workspaceActive = true;
 
 	int firstAllowed()
 	{
@@ -27,29 +28,6 @@ private:
 		return -1;
 	}
 
-	bool setActive(int index)
-	{
-		if (index < 0)
-		{
-			return false;
-		}
-
-		if (index >= _views.length)
-		{
-			return false;
-		}
-
-		if (_active >= 0 && _active < _views.length)
-		{
-			_views[_active].setActive(false);
-		}
-
-		_active = index;
-		_views[_active].setActive(true);
-
-		return true;
-	}
-
 	void ensureActiveAllowed()
 	{
 		if (_views.length == 0)
@@ -58,17 +36,20 @@ private:
 			return;
 		}
 
-		if (_active >= 0 && _active < _views.length)
+		if (_active >= 0 && _active < _views.length && _views[_active].focusable)
 		{
-			auto v = _views[_active];
-
-			if (v.focusable)
-			{
-				return;
-			}
+			return;
 		}
 
-		setActive(firstAllowed());
+		const int index = firstAllowed();
+
+		if (index < 0)
+		{
+			_active = -1;
+			return;
+		}
+
+		setActive(index);
 	}
 
 	bool switchDelta(int delta)
@@ -114,7 +95,49 @@ private:
 		return false;
 	}
 
+	void updatePanel()
+	{
+		import deimos.panel : update_panels;
+
+		update_panels();
+	}
+
+	void doUpdate()
+	{
+		import ncui.lib.checks : ncuiNotErr;
+
+		ncuiNotErr!doupdate();
+	}
+
 public:
+	void setWorkspaceActive(bool active)
+	{
+		_workspaceActive = active;
+	}
+
+	bool setActive(int index)
+	{
+		if (index < 0)
+		{
+			return false;
+		}
+
+		if (index >= _views.length)
+		{
+			return false;
+		}
+
+		if (_active >= 0 && _active < _views.length)
+		{
+			_views[_active].setActive(false);
+		}
+
+		_active = index;
+		_views[_active].setActive(true);
+
+		return true;
+	}
+
 	void add(View view)
 	{
 		_views ~= view;
@@ -148,8 +171,19 @@ public:
 
 		foreach (view; _views)
 		{
-			view.render(context);
+			const bool focused = _workspaceActive && view.active;
+			view.render(context, focused);
 		}
+
+		updatePanel();
+
+		auto a = active();
+		if (a !is null)
+		{
+			a.placeCursor(context);
+		}
+
+		doUpdate();
 	}
 
 	bool handleSwitcher(KeyEvent event)
@@ -162,7 +196,7 @@ public:
 		switch (event.ch)
 		{
 		case KEY_BTAB:
-			return switchDelta(+1);
+			return switchDelta(-1);
 		case KEY_SRIGHT:
 			return switchDelta(+1);
 		case KEY_SLEFT:
@@ -182,9 +216,9 @@ public:
 
 	void close()
 	{
-		foreach (v; _views)
+		foreach (view; _views)
 		{
-			v.close();
+			view.close();
 		}
 
 		_views.length = 0;

@@ -34,6 +34,8 @@ public:
 
 	final override void onHide(ScreenContext context)
 	{
+		_workspace.setWorkspaceActive(false);
+		_workspace.render(context);
 	}
 
 	final override ScreenAction onShow(ScreenContext context)
@@ -44,6 +46,7 @@ public:
 			_built = true;
 		}
 
+		_workspace.setWorkspaceActive(true);
 		_workspace.render(context);
 
 		return ScreenAction.none();
