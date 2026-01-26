@@ -293,6 +293,21 @@ public:
 		return _enabled;
 	}
 
+	void setText(string newText)
+	{
+		_text = newText.toUTF32;
+
+		_length = _text.length;
+		_cursorPosition = _length;
+
+		if (!_inited || _form is null || _fieldInput is null)
+		{
+			return;
+		}
+
+		modifyField();
+	}
+
 	void hideText(bool hidden)
 	{
 		_hidden = hidden;
