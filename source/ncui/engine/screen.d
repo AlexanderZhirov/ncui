@@ -16,11 +16,13 @@ import ncui.engine.action;
 struct ScreenContext
 {
 	Session session;
-	ThemeManager theme;
+	ThemeManager themeManager;
+	IThemeContext theme;
 
 	this(Session s, ThemeManager tm)
 	{
 		session = s;
+		themeManager = tm;
 		theme = tm;
 	}
 }

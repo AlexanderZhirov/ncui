@@ -23,6 +23,7 @@ private:
 	Window _window;
 	Panel _panel;
 	IViewBody _body;
+	IThemeContext _localTheme;
 
 	bool _active;
 	bool _focusable = true;
@@ -71,10 +72,26 @@ public:
 		}
 	}
 
+	LocalTheme localTheme(ScreenContext context)
+	{
+		if (_localTheme is null)
+		{
+			_localTheme = new LocalTheme(context.themeManager, context.theme);
+		}
+
+		return cast(LocalTheme) _localTheme;
+	}
+
 	void render(ScreenContext context, bool focused)
 	{
-		_window.setBackground(context.theme.attr(StyleId.WindowBackground));
-		_body.render(_window, context, focused);
+		auto currentContext = context;
+		if (_localTheme !is null)
+		{
+			currentContext.theme = _localTheme;
+		}
+
+		_window.setBackground(currentContext.theme.attr(StyleId.WindowBackground));
+		_body.render(_window, currentContext, focused);
 	}
 
 	void placeCursor(ScreenContext context)

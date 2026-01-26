@@ -15,6 +15,7 @@ protected:
 	Window _window;
 	Panel _panel;
 	WidgetContainer _ui;
+	IThemeContext _localTheme;
 	bool _built;
 
 	Window ensureWindow(ScreenContext context);
@@ -37,21 +38,36 @@ protected:
 		ncuiNotErr!doupdate();
 	}
 
+	LocalTheme localTheme(ScreenContext context)
+	{
+		if (_localTheme is null)
+		{
+			_localTheme = new LocalTheme(context.themeManager, context.theme);
+		}
+		return cast(LocalTheme) _localTheme;
+	}
+
 private:
 	void render(ScreenContext context)
 	{
+		auto currentContext = context;
+		if (_localTheme !is null)
+		{
+			currentContext.theme = _localTheme;
+		}
+
 		// Установка курсора по-умолчанию.
-		_window.setCursor(context.session.settings.cursor);
+		_window.setCursor(currentContext.session.settings.cursor);
 		// Установка фона для окна.
-		_window.setBackground(context.theme.attr(StyleId.WindowBackground));
+		_window.setBackground(currentContext.theme.attr(StyleId.WindowBackground));
 		// Отрисовка пользовтельского оформления окна.
-		layout(_window, context);
+		layout(_window, currentContext);
 		// Отрисовка виджетов.
-		_ui.render(_window, context);
+		_ui.render(_window, currentContext);
 		// Обновление панелей.
 		_panel.update();
 		// Установка курсора активному виджету.
-		_ui.applyCursor(context);
+		_ui.applyCursor(currentContext);
 		// Применение изменений.
 		doUpdate();
 	}
