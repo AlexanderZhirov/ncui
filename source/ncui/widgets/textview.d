@@ -264,28 +264,38 @@ private:
 	}
 
 public:
-	this(int y, int x, int width, int height, string text = string.init, bool border = true, int bufferSize = 64 * 1024)
+	this(int y, int x, int w, int h, string text = string.init, bool border = true, int bufferSize = 64 * 1024)
 	{
 		if (border)
 		{
-			ncuiExpectMsg!((int h) => h >= 3)("TextView.height must be >= 3 when border=true", true, height);
-			ncuiExpectMsg!((int w) => w >= 3)("TextView.width must be >= 3 when border=true", true, width);
+			ncuiExpectMsg!((int value) => value >= 3)("TextView.height must be >= 3 when border=true", true, h);
+			ncuiExpectMsg!((int value) => value >= 3)("TextView.width must be >= 3 when border=true", true, w);
 		}
 		else
 		{
-			ncuiExpectMsg!((int w) => w > 0)("TextView.width must be > 0", true, width);
-			ncuiExpectMsg!((int h) => h > 0)("TextView.height must be > 0", true, height);
+			ncuiExpectMsg!((int value) => value > 0)("TextView.width must be > 0", true, w);
+			ncuiExpectMsg!((int value) => value > 0)("TextView.height must be > 0", true, h);
 		}
 
 		_y = y;
 		_x = x;
-		_width = width;
-		_height = height;
+		_width = w;
+		_height = h;
 
 		_border = border;
 
 		_bufferSize = bufferSize > 0 ? bufferSize : 1024;
 		_text = text.toUTF32;
+	}
+
+	@property int width()
+	{
+		return _width;
+	}
+
+	@property int height()
+	{
+		return _height;
 	}
 
 	void set(string text)
