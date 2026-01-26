@@ -5,6 +5,8 @@ module ncui.engine.action;
 
 import ncui.engine.screen;
 
+import std.variant : Variant;
+
 /**
  * Тип команды, которую экран возвращает движку.
  *
@@ -35,7 +37,11 @@ enum ScreenKind
 	// Результат отсутствует или не имеет специальной семантики.
 	None,
 	// Отмена действия.
-	Cancel
+	Cancel,
+	// Возврат корректного результата.
+	Ok,
+	// Возврат результата с ошибкой.
+	Error
 }
 
 /**
@@ -45,6 +51,7 @@ struct ScreenResult
 {
 	// Общий тип результата
 	ScreenKind kind;
+	Variant payload;
 
 	static ScreenResult none()
 	{
@@ -54,6 +61,34 @@ struct ScreenResult
 	static ScreenResult cancel()
 	{
 		return ScreenResult(ScreenKind.Cancel);
+	}
+
+	static ScreenResult ok(T)(T value)
+	{
+		return ScreenResult(ScreenKind.Ok, Variant(value));
+	}
+
+	static ScreenResult error(string message)
+	{
+		return ScreenResult(ScreenKind.Error, Variant(message));
+	}
+
+	bool has(T)() const
+	{
+		return payload.type == typeid(T);
+	}
+
+	T get(T)() const
+	{
+		import ncui.lib.checks;
+
+		ncuiExpectMsg!((bool ok) => ok)(
+			"ScreenResult payload has different type",
+			true,
+			has!T()
+		);
+
+		return payload.get!T;
 	}
 }
 
