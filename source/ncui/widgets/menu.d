@@ -135,7 +135,7 @@ private:
 		ncuiLibNotErr!set_menu_sub(_menu, _window);
 		ncuiLibNotErr!set_menu_format(_menu, innerH, 1);
 
-		set_menu_mark(_menu, _mark);
+		ncuiLibNotErr!set_menu_mark(_menu, _mark);
 		// Публикация формы.
 		ncuiLibNotErrAny!post_menu([E_OK, E_POSTED], _menu);
 
@@ -143,25 +143,25 @@ private:
 	}
 
 public:
-	this(int y, int x, int width, int height, MenuLabel[] labels, AcceptCallback accept, bool border = true)
+	this(int y, int x, int w, int h, MenuLabel[] labels, AcceptCallback accept, bool border = true)
 	{
 		if (border)
 		{
-			ncuiExpectMsg!((int w) => w > 3)("Menu.width must be >= 3 when border=true", true, width);
-			ncuiExpectMsg!((int h) => h > 3)("Menu.height must be >= 3 when border=true", true, height);
+			ncuiExpectMsg!((int value) => value > 3)("Menu.width must be >= 3 when border=true", true, w);
+			ncuiExpectMsg!((int value) => value > 3)("Menu.height must be >= 3 when border=true", true, h);
 		}
 		else
 		{
-			ncuiExpectMsg!((int w) => w > 0)("Menu.width must be > 0", true, width);
-			ncuiExpectMsg!((int h) => h > 0)("Menu.height must be > 0", true, height);
+			ncuiExpectMsg!((int value) => value > 0)("Menu.width must be > 0", true, w);
+			ncuiExpectMsg!((int value) => value > 0)("Menu.height must be > 0", true, h);
 		}
 		ncuiExpectMsg!((MenuLabel[] l) => l.length > 0)("Menu.labels must not be empty", true, labels);
 		ncuiExpectMsg!((AcceptCallback f) => f !is null)("Menu.accept must not be null", true, accept);
 
 		_y = y;
 		_x = x;
-		_width = width;
-		_height = height;
+		_width = w;
+		_height = h;
 		_accept = accept;
 		_border = border;
 
@@ -183,6 +183,16 @@ public:
 	{
 		ensureCreated(window);
 		applyMenuTheme(context, focused);
+	}
+
+	@property int width()
+	{
+		return _width;
+	}
+
+	@property int height()
+	{
+		return _height;
 	}
 
 	override ScreenAction handle(ScreenContext context, KeyEvent event)
