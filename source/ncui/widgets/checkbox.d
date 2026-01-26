@@ -18,6 +18,7 @@ private:
 	string _label;
 	bool _checked;
 	bool _enabled = true;
+	int _width;
 
 	void notifyChange()
 	{
@@ -35,6 +36,7 @@ public:
 		_label = label;
 		_checked = checked;
 		_onChange = onChange;
+		_width = cast(int) _label.length + 4;
 	}
 
 	override @property bool focusable()
@@ -99,7 +101,7 @@ public:
 
 	@property int width()
 	{
-		return cast(int) _label.length + 4;
+		return _width;
 	}
 
 	override ScreenAction handle(ScreenContext context, KeyEvent event)
