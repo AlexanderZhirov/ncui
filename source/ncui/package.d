@@ -14,6 +14,9 @@ public import ncui.engine.action;
 public import ncui.engine.screen;
 public import ncui.engine.basescreen;
 public import ncui.engine.theme;
+public import ncui.engine.view;
+public import ncui.engine.workspace;
+public import ncui.engine.workspacescreen;
 
 // Вспомогательная библиотека
 public import ncui.lib.logger;
