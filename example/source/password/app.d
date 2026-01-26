@@ -25,6 +25,18 @@ final class Password : ScreenBase
 
 	override void build(Window window, ScreenContext context, WidgetContainer ui)
 	{
+		auto localTheme = localTheme(context);
+
+		localTheme.set(StyleId.WindowBackground, COLOR_WHITE, COLOR_RED);
+		localTheme.set(StyleId.BorderActive, COLOR_WHITE, COLOR_RED, A_BOLD);
+		localTheme.set(StyleId.Button, COLOR_WHITE, COLOR_RED);
+		localTheme.set(StyleId.ButtonActive, COLOR_WHITE, COLOR_BLUE, A_BOLD);
+		localTheme.set(StyleId.Checkbox, COLOR_WHITE, COLOR_RED);
+		localTheme.set(StyleId.CheckboxActive, COLOR_WHITE, COLOR_BLUE, A_BOLD);
+		localTheme.set(StyleId.TextBoxLabel, COLOR_WHITE, COLOR_RED);
+		localTheme.set(StyleId.TextBoxInput, COLOR_BLACK, COLOR_WHITE, 0);
+		localTheme.set(StyleId.TextBoxInputActive, COLOR_WHITE, COLOR_BLUE, A_BOLD);
+
 		auto password = new TextBox(3, 2, 30, true, "Введите пароль");
 
 		auto checkbox = new Checkbox(4, 2, "Показать пароль", false, (checked) {

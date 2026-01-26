@@ -131,8 +131,23 @@ final class DemoScreen : WorkspaceScreen
 		auto leftWin  = new Window(H, leftW, 0, 0);
 		auto rightWin = new Window(H, rightW, 0, leftW);
 
-		ws.add(new View(leftWin,  new FormBody(), true));
-		ws.add(new View(rightWin, new HelpBody(), true));
+		auto formBody = new View(leftWin,  new FormBody());
+		auto helpBody = new View(rightWin, new HelpBody());
+
+		LocalTheme tFormBody = formBody.localTheme(context);
+		tFormBody.set(StyleId.WindowBackground, COLOR_CYAN, COLOR_YELLOW);
+		tFormBody.set(StyleId.BorderActive, COLOR_BLACK, COLOR_YELLOW);
+		tFormBody.set(StyleId.BorderInactive, COLOR_BLACK, COLOR_YELLOW);
+		tFormBody.set(StyleId.Title, COLOR_BLACK, COLOR_YELLOW, A_BOLD);
+
+		LocalTheme tHelpBody = helpBody.localTheme(context);
+		tHelpBody.set(StyleId.WindowBackground, COLOR_WHITE, COLOR_BLUE);
+		tHelpBody.set(StyleId.BorderActive, COLOR_WHITE, COLOR_BLUE);
+		tHelpBody.set(StyleId.BorderInactive, COLOR_WHITE, COLOR_BLUE);
+		tHelpBody.set(StyleId.Title, COLOR_WHITE, COLOR_BLUE, A_BOLD);
+
+		ws.add(formBody);
+		ws.add(helpBody);
 	}
 
 	override ScreenAction handleGlobal(ScreenContext context, KeyEvent event)
