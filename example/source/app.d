@@ -1,7 +1,7 @@
 import ncui;
 import ncui.engine.theme;
 
-import simple;
+import workspace;
 
 void main()
 {
@@ -10,7 +10,7 @@ void main()
 	auto config = SessionConfig(InputMode.raw, Cursor.hidden, Echo.off, Keypad.on);
 	NCUI ncui = new NCUI(config, new LightTheme());
 
-	Simple screen = new Simple();
+	DemoScreen screen = new DemoScreen();
 
 	try
 	{
