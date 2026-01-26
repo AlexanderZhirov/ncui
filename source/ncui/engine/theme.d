@@ -9,12 +9,8 @@ import ncui.lib.checks;
  */
 enum StyleId
 {
-	// Фон всего экрана.
-	ScreenBackground,
 	// Фон окон.
 	WindowBackground,
-	// Фон виджетов.
-	WidgetBackground,
 	// Обычный текст интерфейса.
 	Text,
 	// Вторичный/приглушённый текст.
@@ -140,12 +136,101 @@ interface ITheme
 }
 
 /**
+ * Контекст темы для отрисовки.
+ */
+interface IThemeContext
+{
+	// Возвращает `Style` для семантического идентификатора `id`.
+	Style style(StyleId id);
+
+	// Возвращает ncurses-атрибут для рисования (`COLOR_PAIR(pair) | attrs`).
+	int attr(StyleId id);
+}
+
+void newPair(short slot, short color, short attrs)
+{
+	ncuiExpectMsg!((int value) => 0 <= value && value <= A_ATTRIBUTES )(
+		"Invalid ncurses attributes mask (attrs out of range)",
+		true,
+		attrs
+	);
+
+	ncuiNotErr!init_pair(slot, color, attrs);
+}
+
+/**
  * ThemeManager — единая точка доступа к текущей теме.
  */
-final class ThemeManager
+final class ThemeManager : IThemeContext
 {
 private:
 	ITheme _theme;
+
+	// Следующий свободный id пары для динамической регистрации.
+	short _nextPair;
+	// Кэш: (foreground, background) -> pairId.
+	short[uint] _pairs;
+
+	/**
+	 * Упаковывает два `short` (foreground/background) в один `uint` для ключа кэша.
+	 *
+	 * Делается через `ushort`, чтобы корректно обработать `-1` (default color).
+	 *
+	 * Params:
+	 *   foreground = Цвет переднего плана (0..7 или -1).
+	 *   background = Цвет фона (0..7 или -1).
+	 *
+	 * Returns:
+	 *   32-битный ключ, где foreground лежит в верхних 16 битах, background — в нижних 16 битах.
+	 */
+	static uint pack(short foreground, short background) @nogc nothrow
+	{
+		return (cast(uint) cast(ushort) foreground << 16) | cast(uint) cast(ushort) background;
+	}
+
+	/**
+	 * Проверяет, что цвет входит в допустимый набор.
+	 *
+	 * Разрешены только:
+	 * - `-1` (цвет терминала по умолчанию; используется с `use_default_colors()`),
+	 * - `0..7` (стандартные цвета ncurses: COLOR_BLACK..COLOR_WHITE).
+	 */
+	static bool isStdColor(short c) @nogc nothrow
+	{
+		if (c == -1)
+		{
+			return true;
+		}
+
+		return c >= 0 && c <= 7; // COLOR_BLACK..COLOR_WHITE
+	}
+
+	/**
+	 * Возвращает id color-pair для `(foreground, background)`.
+	 *
+	 * Если такая пара уже регистрировалась — берёт из кэша.
+	 * Иначе регистрирует новую через `newPair`, проверяя лимит `COLOR_PAIRS`.
+	 */
+	short registerPair(short foreground, short background)
+	{
+		ncuiExpectMsg!((bool ok) => ok)("Only standard ncurses colors are allowed (0..7, optional -1)", true,
+			isStdColor(foreground));
+		ncuiExpectMsg!((bool ok) => ok)("Only standard ncurses colors are allowed (0..7, optional -1)", true,
+			isStdColor(background));
+
+		const uint key = pack(foreground, background);
+
+		if (auto p = key in _pairs)
+		{
+			return *p;
+		}
+
+		newPair(_nextPair, foreground, background);
+
+		_pairs[key] = _nextPair;
+
+		return _nextPair++;
+	}
 
 public:
 	this(ITheme theme = null)
@@ -157,16 +242,99 @@ public:
 		_theme = theme is null ? new DefaultTheme() : theme;
 
 		_theme.initialize();
+
+		_nextPair = PairSlot.max + 1;
 	}
 
+
+	/**
+	 * Возвращает ncurses-атрибут (`COLOR_PAIR(pair) | attrs`) для `id`.
+	 */
 	int attr(StyleId id)
 	{
 		return style(id).attr;
 	}
 
+	/**
+	 * Возвращает `Style` для `id` из текущей темы.
+	 */
 	Style style(StyleId id)
 	{
 		return _theme.style(id);
+	}
+
+	/**
+	 * Возвращает id color-pair для заданных стандартных цветов.
+	 */
+	short pair(short foreground, short background)
+	{
+		return registerPair(foreground, background);
+	}
+}
+
+/**
+ * LocalTheme — локальное переопределение стилей поверх базовой темы.
+ */
+final class LocalTheme : IThemeContext
+{
+private:
+	// Базовый контекст (обычно ThemeManager), из которого берутся непереопределённые стили.
+	IThemeContext _base;
+	// Корневой ThemeManager (нужен для регистрации динамических пар).
+	ThemeManager _root;
+
+	// Количество элементов перечисления StyleId (ожидается непрерывный enum от 0).
+	enum StyleCount = StyleId.max + 1;
+	// Флаги наличия переопределений по StyleId.
+	bool[StyleCount] _has;
+	// Хранилище переопределений по StyleId.
+	Style[StyleCount] _override;
+
+public:
+	/**
+	 * Создаёт локальную тему поверх `base`.
+	 */
+	this(ThemeManager root, IThemeContext base)
+	{
+		_root = root;
+		_base = base;
+	}
+
+	/**
+	 * Устанавливает переопределение для конкретного `StyleId`.
+	 *
+	 * Params:
+	 *   id         = Семантический идентификатор стиля.
+	 *   foreground = COLOR_BLACK..COLOR_WHITE (0..7) или -1.
+	 *   background = COLOR_BLACK..COLOR_WHITE (0..7) или -1.
+	 *   attrs      = Маска атрибутов ncurses (A_BOLD, A_DIM, A_UNDERLINE и т.п.).
+	 */
+	void set(StyleId id, short foreground, short background, int attrs = 0)
+	{
+		ncuiExpectMsg!((int value) => 0 <= value && value <= A_ATTRIBUTES )(
+			"Invalid ncurses attributes mask (attrs out of range)",
+			true,
+			attrs
+		);
+
+		_override[id] = Style(_root.pair(foreground, background), attrs);
+		_has[id] = true;
+	}
+
+	/**
+	 * Возвращает переопределённый стиль, если он есть, иначе берёт из `_base`.
+	 */
+	override Style style(StyleId id)
+	{
+		return _has[id] ? _override[id] : _base.style(id);
+	}
+
+	/**
+	 * Возвращает ncurses-атрибут для рисования.
+	 */
+	override int attr(StyleId id)
+	{
+		return style(id).attr;
 	}
 }
 
@@ -215,11 +383,7 @@ final class DefaultTheme : ITheme
 		final switch (id)
 		{
 			// Фоны.
-		case StyleId.ScreenBackground:
-			return Style(PairSlot.Normal, 0);
 		case StyleId.WindowBackground:
-			return Style(PairSlot.Normal, 0);
-		case StyleId.WidgetBackground:
 			return Style(PairSlot.Normal, 0);
 
 			// Текст.
@@ -291,11 +455,6 @@ final class DefaultTheme : ITheme
 	}
 }
 
-void newPair(short slot, short color, short attrs)
-{
-	ncuiNotErr!init_pair(slot, color, attrs);
-}
-
 final class DarkTheme : ITheme
 {
 	override void initialize()
@@ -338,11 +497,7 @@ final class DarkTheme : ITheme
 		final switch (id)
 		{
 			// Фоны.
-		case StyleId.ScreenBackground:
-			return Style(PairSlot.Normal, 0);
 		case StyleId.WindowBackground:
-			return Style(PairSlot.Normal, 0);
-		case StyleId.WidgetBackground:
 			return Style(PairSlot.Normal, 0);
 
 			// Текст.
@@ -456,11 +611,7 @@ final class LightTheme : ITheme
 		final switch (id)
 		{
 			// Фоны.
-		case StyleId.ScreenBackground:
-			return Style(PairSlot.Normal, 0);
 		case StyleId.WindowBackground:
-			return Style(PairSlot.Normal, 0);
-		case StyleId.WidgetBackground:
 			return Style(PairSlot.Normal, 0);
 
 			// Текст.
