@@ -67,6 +67,11 @@ private:
 			final switch (action.kind)
 			{
 			case ActionKind.Push:
+				if (_stack.length != 0)
+				{
+					_stack[$ - 1].onHide(_context);
+				}
+
 				_stack ~= action.next;
 				action = action.next.onShow(_context);
 				break;
@@ -74,6 +79,7 @@ private:
 			case ActionKind.Replace:
 				if (_stack.length != 0)
 				{
+					_stack[$ - 1].onHide(_context);
 					_stack[$ - 1].close();
 					_stack.popBack();
 				}
@@ -95,6 +101,7 @@ private:
 					return;
 				}
 				auto parent = _stack[$ - 1];
+				parent.onHide(_context);
 				// Передача результата дочернего экрана первому экрану в стеке (родительскому экрану).
 				auto actionResult = parent.onChildResult(_context, childResult);
 				if (actionResult.kind != ActionKind.None)
@@ -118,6 +125,7 @@ private:
 					return;
 				}
 				auto parent = _stack[$ - 1];
+				parent.onHide(_context);
 				// Передача результата дочернего экрана первому экрану в стеке (родительскому экрану).
 				auto actionResult = parent.onChildResult(_context, childResult);
 				if (actionResult.kind != ActionKind.None)

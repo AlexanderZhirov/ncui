@@ -50,6 +50,16 @@ public:
 		return _window.handle();
 	}
 
+	final override void onHide(ScreenContext context)
+	{
+		if (_ui !is null)
+		{
+			_ui.setActive(false);
+		}
+
+		render(context);
+	}
+
 	final override ScreenAction onShow(ScreenContext context)
 	{
 		if (_window is null)
@@ -75,6 +85,7 @@ public:
 
 		_panel.top();
 
+		_ui.setActive(true);
 		render(context);
 
 		return ScreenAction.none();

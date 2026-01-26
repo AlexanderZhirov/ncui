@@ -39,6 +39,8 @@ interface IScreen
 	// Вызывается движком, когда экран становится активным (оказался наверху стека)
 	// или когда движок явно инициирует перерисовку (зависит от реализации).
 	ScreenAction onShow(ScreenContext context);
+	// Вызывается движком, когда экран становится неактивным (оказался предыдущим в стеке).
+	void onHide(ScreenContext context);
 	// Вызывается движком после закрытия дочернего экрана (Pop/PopTo),
 	// чтобы передать родителю результат дочернего экрана.
 	ScreenAction onChildResult(ScreenContext context, ScreenResult child);

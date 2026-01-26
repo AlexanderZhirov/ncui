@@ -27,6 +27,8 @@ private:
 	IWidget[] _children;
 	// Индекс сфокусированного виджета или -1, если фокуса нет.
 	int _focus = -1;
+	// Активность виджетов в текущем окне.
+	bool _active = true;
 public:
 	// Добавить виджет в контейнер.
 	void add(IWidget widget)
@@ -107,15 +109,24 @@ public:
 		return false;
 	}
 
+	void setActive(bool active)
+	{
+		if (_active != active)
+		{
+			_active = active;
+		}
+	}
+
 	// Отрисовка виджетов.
 	void render(Window window, ScreenContext context)
 	{
 		foreach (index, child; _children)
 		{
-			child.render(window, context, index == _focus);
+			const bool focused = _active && (index == _focus);
+			child.render(window, context, focused);
 		}
 
-		if (_focus >= 0 && _focus < _children.length)
+		if (_active && _focus >= 0 && _focus < _children.length)
 		{
 			if (auto child = cast(ICursorOwner) _children[_focus])
 			{
