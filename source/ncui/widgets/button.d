@@ -23,6 +23,7 @@ private:
 	// Надпись кнопки.
 	string _text;
 	string _decor;
+	int _width;
 public:
 	this(int y, int x, string text, OnClick onClick = null)
 	{
@@ -30,6 +31,7 @@ public:
 		_x = x;
 		_text = text;
 		_decor = "[ " ~ text ~ " ]";
+		_width = cast(int) _decor.length;
 		_onClick = onClick;
 	}
 
@@ -84,7 +86,7 @@ public:
 
 	@property int width()
 	{
-		return cast(int) _decor.length;
+		return _width;
 	}
 
 	void onClick(OnClick callback)
