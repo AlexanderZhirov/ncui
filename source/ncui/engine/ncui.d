@@ -168,6 +168,25 @@ public:
 			auto currentScreen = _stack[$ - 1];
 			// Ожидать события нажатия клавиш в извлеченном из стека экране.
 			auto event = _session.readKey(currentScreen.inputWindow());
+
+			if (event.isErr)
+			{
+				// Если tick включен — обновить экран.
+				if (_session.settings.tickMs > 0)
+				{
+					if (auto idle = cast(IIdleScreen) currentScreen)
+					{
+						apply(idle.onTick(_context));
+					}
+
+					continue;
+				}
+
+				// Если tick выключен, то произошла ошибка.
+				apply(ScreenAction.quit(ScreenResult.error("Input error (wget_wch returned ERR)")));
+				continue;
+			}
+
 			// Обработать нажатие клавиши в текущем окне.
 			auto action = currentScreen.handle(_context, event);
 			// Обработать возвращенное действие из окна.

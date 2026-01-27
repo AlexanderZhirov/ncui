@@ -8,7 +8,7 @@ import ncui.engine.action;
 import ncui.engine.screen;
 import ncui.engine.workspace;
 
-abstract class WorkspaceScreen : IScreen
+abstract class WorkspaceScreen : IScreen, IIdleScreen
 {
 protected:
 	Workspace _workspace;
@@ -22,6 +22,11 @@ protected:
 	void build(ScreenContext context, Workspace workspace);
 
 	ScreenAction handleGlobal(ScreenContext context, KeyEvent event)
+	{
+		return ScreenAction.none();
+	}
+
+	ScreenAction idleTick(ScreenContext context)
 	{
 		return ScreenAction.none();
 	}
@@ -51,6 +56,25 @@ public:
 
 		return ScreenAction.none();
 	}
+
+	final override ScreenAction onTick(ScreenContext context)
+	{
+		auto action = idleTick(context);
+		if (action.kind != ActionKind.None)
+		{
+			return action;
+		}
+
+		auto workspaceAction = _workspace.tick(context);
+		if (workspaceAction.kind != ActionKind.None)
+		{
+			return workspaceAction;
+		}
+
+		_workspace.render(context);
+		return ScreenAction.none();
+	}
+
 
 	override ScreenAction onChildResult(ScreenContext context, ScreenResult child)
 	{

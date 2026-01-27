@@ -62,3 +62,9 @@ interface ITaggedScreen
 {
 	int tag();
 }
+
+// Интерфейс динамического обновления содержимого.
+interface IIdleScreen
+{
+	ScreenAction onTick(ScreenContext context);
+}

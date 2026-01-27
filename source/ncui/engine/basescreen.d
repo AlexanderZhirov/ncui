@@ -9,7 +9,7 @@ import ncui.engine.action;
 import ncui.engine.theme;
 import ncui.widgets.container;
 
-abstract class ScreenBase : IScreen
+abstract class ScreenBase : IScreen, IIdleScreen
 {
 protected:
 	Window _window;
@@ -45,6 +45,11 @@ protected:
 			_localTheme = new LocalTheme(context.themeManager, context.theme);
 		}
 		return cast(LocalTheme) _localTheme;
+	}
+
+	ScreenAction idleTick(ScreenContext context)
+	{
+		return ScreenAction.none();
 	}
 
 private:
@@ -115,6 +120,22 @@ public:
 
 		_ui.setActive(true);
 		render(context);
+
+		return ScreenAction.none();
+	}
+
+	final override ScreenAction onTick(ScreenContext context)
+	{
+		auto action = idleTick(context);
+		if (action.kind != ActionKind.None)
+		{
+			return action;
+		}
+
+		if (_window !is null && _ui !is null && _panel !is null)
+		{
+			render(context);
+		}
 
 		return ScreenAction.none();
 	}

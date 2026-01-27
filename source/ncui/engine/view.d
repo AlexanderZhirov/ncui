@@ -37,6 +37,21 @@ public:
 		_panel = new Panel(_window.handle());
 	}
 
+	ScreenAction tick(ScreenContext context)
+	{
+		if (_body is null)
+		{
+			return ScreenAction.none();
+		}
+
+		if (auto idle = cast(IIdleScreen) _body)
+		{
+			return idle.onTick(context);
+		}
+
+		return ScreenAction.none();
+	}
+
 	Window window()
 	{
 		return _window;

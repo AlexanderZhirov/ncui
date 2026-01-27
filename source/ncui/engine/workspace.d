@@ -147,6 +147,24 @@ public:
 		}
 	}
 
+	ScreenAction tick(ScreenContext context)
+	{
+		ensureActiveAllowed();
+
+		foreach (view; _views)
+		{
+			auto a = view.tick(context);
+
+			if (a.kind != ActionKind.None)
+			{
+				return a;
+			}
+		}
+
+		return ScreenAction.none();
+	}
+
+
 	View active()
 	{
 		ensureActiveAllowed();

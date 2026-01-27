@@ -121,6 +121,8 @@ struct SessionConfig
 	Keypad keypad = Keypad.on;
 	/// Задержка распознавания ESC/escape-последовательностей в миллисекундах.
 	int escDelay = 50;
+	// Таймаут обновления экрана.
+	int tickMs = 50;
 }
 
 /**
@@ -211,6 +213,9 @@ public:
 
 	KeyEvent readKey(NCWin inputWindow)
 	{
+		// Таймаут на ввод: по истечении вернётся ERR (это и будет tick).
+		wtimeout(inputWindow, _config.tickMs > 0 ? _config.tickMs : -1);
+
 		dchar ch;
 		int status = wget_wch(inputWindow, &ch);
 		return KeyEvent(status, ch);
