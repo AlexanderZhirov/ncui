@@ -111,6 +111,7 @@ private:
 
 		// Окно с рамкой.
 		_windowBorder = ncuiNotNull!derwin(window.handle(), _height, _width, _y, _x);
+		ncuiNotErr!syncok(_windowBorder, true);
 
 		const int innerH = _border ? _height - 2 : _height;
 		const int innerW = _border ? _width - 2 : _width;
@@ -119,6 +120,7 @@ private:
 
 		// Создание внутреннего окна.
 		_window = ncuiNotNull!derwin(_windowBorder, innerH, innerW, offY, offX);
+		ncuiNotErr!syncok(_window, true);
 		// +1 для null строки.
 		_items.length = _labels.length + 1;
 
