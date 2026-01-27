@@ -1,6 +1,7 @@
 # Ncurses User Interface Library
 
 [![GitHub tag](https://img.shields.io/github/tag-date/AlexanderZhirov/ncui.svg?maxAge=86400&style=flat)](https://github.com/AlexanderZhirov/ncui/tags)
+[![code.dlang.org](https://img.shields.io/dub/v/ncui.svg)](http://code.dlang.org/packages/ncui)
 [![license](https://img.shields.io/github/license/AlexanderZhirov/ncui.svg?style=flat)](https://github.com/AlexanderZhirov/ncui/blob/master/LICENSE.txt)
 
 `ncui` — библиотека для построения TUI-приложений на D поверх **ncurses**.
