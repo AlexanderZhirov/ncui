@@ -1,5 +1,8 @@
 # Ncurses User Interface Library
 
+[![GitHub tag](https://img.shields.io/github/tag-date/AlexanderZhirov/ncui.svg?maxAge=86400&style=flat)](https://github.com/AlexanderZhirov/ncui/tags)
+[![license](https://img.shields.io/github/license/AlexanderZhirov/ncui.svg?style=flat)](https://github.com/AlexanderZhirov/ncui/blob/master/LICENSE.txt)
+
 `ncui` — библиотека для построения TUI-приложений на D поверх **ncurses**.
 
 Проект включает:
@@ -11,14 +14,14 @@
 
 ---
 
-## Установка (DUB)
+## DUB
 
 `dub.json` проекта:
 
 ```json
 {
 	"dependencies": {
-		"ncui": "~>0.1.0"
+		"ncui": "~>0.1.0-alpha.1"
 	}
 }
 ```
