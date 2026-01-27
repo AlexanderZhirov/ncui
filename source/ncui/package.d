@@ -22,6 +22,8 @@ public import ncui.engine.workspacescreen;
 
 // Вспомогательная библиотека
 public import ncui.lib.logger;
+public import ncui.lib.checks;
+public import ncui.lib.wrap;
 
 // Виджеты
 public import ncui.widgets.widget;
