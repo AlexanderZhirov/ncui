@@ -1,6 +1,6 @@
 {
 	"name": "ncui",
-	"description": "Ncurses User Interface",
+	"description": "Ncurses User Interface Library",
 	"license": "BSL-1.0",
 	"authors": [
 		"Alexander Zhirov"
