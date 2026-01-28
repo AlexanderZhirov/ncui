@@ -1,6 +1,5 @@
 module ncui.widgets.textview;
 
-import deimos.form;
 import deimos.ncurses;
 
 import ncui.widgets.widget;
@@ -11,10 +10,7 @@ import ncui.engine.screen;
 import ncui.engine.action;
 import ncui.engine.theme;
 import ncui.lib.checks;
-
-import std.utf : toUTF32;
-
-private enum dstring NL = "\n".toUTF32;
+import ncui.lib.wrap;
 
 final class TextView : IWidget, IWidgetClosable
 {
@@ -26,153 +22,43 @@ private:
 	int _x;
 	int _width;
 	int _height;
+	// Устанавливаемый текст.
+	dstring[] _text;
+	bool _border;
 	// Флаг инициализации формы.
 	bool _inited;
-	// Максимальный размер динамического буфера поля.
-	int _bufferSize;
-	// Устанавливаемый текст.
-	dstring _text;
 
-	bool _border = true;
-
-	FIELD* _fieldText;
-	FIELD*[2] _fields;
-	FORM* _form;
-	NCWin _window;
+	// Окно с рамкой.
 	NCWin _windowBorder;
+	// Окно, на которое копируются данные из холста pad.
+	NCWin _window;
+	NCWin _pad;
 
-	int driveRequestAllowDenied(int request)
+	// Высота и ширина внутреннего окна _window.
+	int _innerH;
+	int _innerW;
+
+	// Позиция просмотра pad.
+	int _padTop;
+
+	// Чтобы не перерисовывать pad на каждом render().
+	bool _padDirty = true;
+	int _lastTextAttr = int.min;
+
+	// Ширина внутреннего окна.
+	int innerWidth()
 	{
-		return ncuiLibNotErrAny!form_driver_w([E_OK, E_REQUEST_DENIED], _form, KEY_CODE_YES, request);
+		return _border ? _width - 2 : _width;
 	}
 
-	void driveRepeat(int request, uint steps)
+	// Высота внутреннего окна.
+	int innerHeight()
 	{
-		foreach (_; 0 .. steps)
-		{
-			if (driveRequestAllowDenied(request) == E_REQUEST_DENIED)
-			{
-				break;
-			}
-		}
+		return _border ? _height - 2 : _height;
 	}
 
-	void scrollByLines(int deltaLines)
-	{
-		if (!_inited || deltaLines == 0)
-		{
-			return;
-		}
-
-		driveRepeat(deltaLines > 0 ? REQ_SCR_FLINE : REQ_SCR_BLINE,
-			cast(uint)(deltaLines > 0 ? deltaLines : -deltaLines));
-	}
-
-	void scrollByPages(int deltaPages)
-	{
-		if (!_inited || deltaPages == 0)
-		{
-			return;
-		}
-
-		driveRepeat(deltaPages > 0 ? REQ_SCR_FPAGE : REQ_SCR_BPAGE,
-			cast(uint)(deltaPages > 0 ? deltaPages : -deltaPages));
-	}
-
-	void scrollToTop()
-	{
-		if (!_inited)
-		{
-			return;
-		}
-
-		driveRequestAllowDenied(REQ_BEG_FIELD);
-		driveRequestAllowDenied(REQ_BEG_LINE);
-	}
-
-	void scrollToEnd()
-	{
-		if (!_inited)
-		{
-			return;
-		}
-
-		driveRequestAllowDenied(REQ_END_FIELD);
-		driveRequestAllowDenied(REQ_END_LINE);
-	}
-
-	// Очистка формы.
-	void cleanForm()
-	{
-		driveRequestAllowDenied(REQ_CLR_FIELD);
-		driveRequestAllowDenied(REQ_BEG_FIELD);
-		driveRequestAllowDenied(REQ_BEG_LINE);
-	}
-
-	// Непосредственная вставка текста в поле.
-	void putText(dstring text)
-	{
-		foreach (dchar ch; text)
-		{
-			if (ch == '\r')
-			{
-				continue;
-			}
-
-			if (ch == '\n')
-			{
-				const int result = driveRequestAllowDenied(REQ_NEW_LINE);
-				// Прекратить вставку, если буфер переполнен.
-				if (result == E_REQUEST_DENIED)
-				{
-					break;
-				}
-				continue;
-			}
-
-			const int result = ncuiLibNotErrAny!form_driver_w([E_OK, E_REQUEST_DENIED], _form, OK, ch);
-			// Прекратить вставку, если буфер переполнен.
-			if (result == E_REQUEST_DENIED)
-			{
-				break;
-			}
-		}
-	}
-
-	void appendField(dstring text)
-	{
-		if (!_inited || _fieldText is null)
-		{
-			return;
-		}
-
-		// Установить поле текущим в форме.
-		ncuiLibNotErrAny!set_current_field([E_OK, E_CURRENT], _form, _fieldText);
-
-		driveRequestAllowDenied(REQ_END_FIELD);
-		driveRequestAllowDenied(REQ_END_LINE);
-		driveRequestAllowDenied(REQ_NEXT_LINE);
-		driveRequestAllowDenied(REQ_BEG_LINE);
-		// Посимвольная вставка текста.
-		putText(text);
-	}
-
-	// Посимвольное заполнение поля, позволяющее автоматически переносить слова на новую строку.
-	void fillField()
-	{
-		// Установить поле текущим в форме.
-		ncuiLibNotErrAny!set_current_field([E_OK, E_CURRENT], _form, _fieldText);
-
-		// Очистить поле формы перед заполнением текстом.
-		cleanForm();
-		// Посимвольная вставка текста.
-		putText(_text);
-
-		driveRequestAllowDenied(REQ_BEG_FIELD);
-		driveRequestAllowDenied(REQ_BEG_LINE);
-	}
-
-	void setupTheme(ScreenContext context, bool focused)
+	// Получить текущие атрибуты виджета.
+	int textAttr(ScreenContext context, bool focused)
 	{
 		StyleId style;
 
@@ -189,61 +75,114 @@ private:
 			style = StyleId.TextView;
 		}
 
-		auto attr = context.theme.attr(style);
-
-		ncuiLibNotErr!set_field_fore(_fieldText, attr);
-		ncuiLibNotErr!set_field_back(_fieldText, attr);
+		return context.theme.attr(style);
 	}
 
-	void ensureCreated(Window window, ScreenContext context)
+	// Использовать высоту pad равную количество установленных строк, иначе - высоту внутреннего окна.
+	int padHeight()
 	{
-		if (_inited)
+		const int h = (_text.length > 0) ? cast(int) _text.length : 1;
+		return (h < _innerH) ? _innerH : h;
+	}
+
+	// Создание pad.
+	void ensurePad(ScreenContext context, bool focused)
+	{
+		const int attr = textAttr(context, focused);
+
+		// Если изменился стиль (например focus/unfocus) — pad надо пересобрать.
+		if (attr != _lastTextAttr)
+		{
+			_padDirty = true;
+		}
+
+		// Если pad существует и не изменился — возврат.
+		if (!_pad.isNull && !_padDirty)
 		{
 			return;
 		}
 
-		// Окно с рамкой.
-		_windowBorder = ncuiNotNull!derwin(window.handle(), _height, _width, _y, _x);
+		// Если pad существует — пересобрать с существующими изменениями (_padDirty == true).
+		if (!_pad.isNull)
+		{
+			ncuiNotErr!delwin(_pad);
+			_pad = NCWin(null);
+		}
 
-		const int innerH = _border ? _height - 2 : _height;
-		const int innerW = _border ? _width - 2 : _width;
+		_pad = ncuiNotNull!newpad(padHeight(), _innerW);
+
+		ncuiNotErr!wbkgd(_pad, attr);
+		ncuiNotErr!werase(_pad);
+
+		if (attr != 0)
+		{
+			ncuiNotErr!wattron(_pad, attr);
+		}
+
+		scope (exit)
+		{
+			if (attr != 0)
+			{
+				ncuiNotErr!wattroff(_pad, attr);
+			}
+		}
+
+		foreach (i, line; _text)
+		{
+			if (line.length == 0)
+			{
+				ncuiNotErr!wmove(_pad, cast(int)i, 0);
+				continue;
+			}
+
+			ncuiNotErr!mvwaddnwstr(_pad, cast(int) i, 0, line.ptr, cast(int) line.length);
+		}
+
+		_lastTextAttr = attr;
+		_padDirty = false;
+	}
+
+	// Создание окна + границы.
+	void ensureWindows(Window window)
+	{
+		_windowBorder = ncuiNotNull!derwin(window.handle(), _height, _width, _y, _x);
+		ncuiNotErr!syncok(_windowBorder, true);
+
+		_innerH = innerHeight();
+		_innerW = innerWidth();
+
 		const int offY = _border ? 1 : 0;
 		const int offX = _border ? 1 : 0;
 
-		_window = ncuiNotNull!derwin(_windowBorder, innerH, innerW, offY, offX);
-
-		_fieldText = ncuiNotNull!new_field(innerH, innerW, 0, 0, 0, 0);
-		_fields[0] = _fieldText;
-		_fields[1] = null;
-
-		ncuiLibNotErr!field_opts_off(_fieldText, O_STATIC);
-		ncuiLibNotErr!set_max_field(_fieldText, _bufferSize);
-
-		ncuiLibNotErr!field_opts_off(_fieldText, O_AUTOSKIP);
-		ncuiLibNotErr!field_opts_on(_fieldText, O_WRAP);
-
-		_form = ncuiNotNull!new_form(_fields.ptr);
-
-		ncuiLibNotErr!set_form_win(_form, _windowBorder);
-		ncuiLibNotErr!set_form_sub(_form, _window);
-
-		ncuiLibNotErrAny!post_form([E_OK, E_POSTED], _form);
-
-		setupTheme(context, false);
-
-		// Заполнение поля текстом.
-		fillField();
-
-		_inited = true;
+		_window = ncuiNotNull!derwin(_windowBorder, _innerH, _innerW, offY, offX);
+		ncuiNotErr!syncok(_window, true);
 	}
 
-	void applyTheme(ScreenContext context, bool focused)
+	// Скопировать холст pad на внутреннее окно.
+	void blitPadToWindow()
 	{
-		if (_fieldText !is null)
+		ncuiNotErr!werase(_window);
+		ncuiNotErr!copywin(_pad, _window, _padTop, 0, 0, 0, _innerH - 1, _innerW - 1, 0);
+	}
+
+	// Создание виджета.
+	void ensureCreated(Window window, ScreenContext context, bool focused)
+	{
+		if (!_inited)
 		{
-			setupTheme(context, focused);
+			_padTop = 0;
+			ensureWindows(window);
+			_inited = true;
 		}
 
+		ensurePad(context, focused);
+		clampPad();
+		blitPadToWindow();
+	}
+
+	// Применение темы.
+	void applyTheme(ScreenContext context, bool focused)
+	{
 		if (_border)
 		{
 			const int attr = context.theme.attr(focused ? StyleId.BorderActive : StyleId.BorderInactive);
@@ -256,15 +195,73 @@ private:
 			scope (exit)
 			{
 				if (attr != 0)
+				{
 					ncuiNotErr!wattroff(_windowBorder, attr);
+				}
 			}
 
 			ncuiNotErr!box(_windowBorder, 0, 0);
 		}
 	}
 
+	int maxPadTop()
+	{
+		const int m = padHeight() - _innerH;
+		return m > 0 ? m : 0;
+	}
+
+	void clampPad()
+	{
+		if (_padTop < 0)
+		{
+			_padTop = 0;
+		}
+
+		const int m = maxPadTop();
+
+		if (_padTop > m)
+		{
+			_padTop = m;
+		}
+	}
+
+	bool scrollByLines(int delta)
+	{
+		if (!_inited || _pad.isNull || delta == 0)
+		{
+			return false;
+		}
+
+		const int old = _padTop;
+
+		_padTop += delta;
+		clampPad();
+
+		return _padTop != old;
+	}
+
+	int pageStep()
+	{
+		return (_innerH > 1) ? (_innerH - 1) : 1;
+	}
+
+	bool scrollTo(int top)
+	{
+		if (!_inited || _pad.isNull)
+		{
+			return false;
+		}
+
+		const int old = _padTop;
+
+		_padTop = top;
+		clampPad();
+
+		return _padTop != old;
+	}
+
 public:
-	this(int y, int x, int w, int h, string text = string.init, bool border = true, int bufferSize = 64 * 1024)
+	this(int y, int x, int w, int h, string text = string.init, bool border = true)
 	{
 		if (border)
 		{
@@ -284,8 +281,8 @@ public:
 
 		_border = border;
 
-		_bufferSize = bufferSize > 0 ? bufferSize : 1024;
-		_text = text.toUTF32;
+		_text = text.wrapWordsWide(innerWidth());
+		_padDirty = true;
 	}
 
 	@property int width()
@@ -298,30 +295,30 @@ public:
 		return _height;
 	}
 
-	void set(string text)
+	void append(string text)
 	{
-		_text = text.toUTF32;
-
-		if (!_inited || _fieldText is null)
+		auto more = text.wrapWordsWide(innerWidth());
+		if (more.length == 0)
 		{
 			return;
 		}
 
-		fillField();
-	}
-
-	void append(string text)
-	{
-		auto currentText = text.toUTF32;
-
-		if (_text.length != 0)
+		if (!_inited)
 		{
-			_text ~= NL;
-			appendField(NL);
+			_text ~= more;
+			_padDirty = true;
+			return;
 		}
 
-		_text ~= currentText;
-		appendField(currentText);
+		const bool wasAtBottom = (_padTop >= maxPadTop());
+
+		_text ~= more;
+		_padDirty = true;
+
+		if (wasAtBottom)
+		{
+			_padTop = maxPadTop();
+		}
 	}
 
 	override @property bool focusable()
@@ -336,39 +333,52 @@ public:
 
 	override void render(Window window, ScreenContext context, bool focused)
 	{
-		ensureCreated(window, context);
+		ensureCreated(window, context, focused);
 		applyTheme(context, focused);
 	}
 
 	override ScreenAction handle(ScreenContext context, KeyEvent event)
 	{
-		if (!_enabled || !_inited || _form is null || !event.isKeyCode)
+		if (!event.isKeyCode)
 		{
 			return ScreenAction.none();
 		}
 
+		bool changed = false;
+
 		switch (event.ch)
 		{
 		case KEY_UP:
-			scrollByLines(-1);
+			changed = scrollByLines(-1);
 			break;
+
 		case KEY_DOWN:
-			scrollByLines(+1);
+			changed = scrollByLines(+1);
 			break;
+
 		case KEY_PPAGE:
-			scrollByPages(-1);
+			changed = scrollByLines(-pageStep());
 			break;
+
 		case KEY_NPAGE:
-			scrollByPages(+1);
+			changed = scrollByLines(+pageStep());
 			break;
+
 		case KEY_HOME:
-			scrollToTop();
+			changed = scrollTo(0);
 			break;
+
 		case KEY_END:
-			scrollToEnd();
+			changed = scrollTo(maxPadTop());
 			break;
+
 		default:
 			break;
+		}
+
+		if (changed)
+		{
+			blitPadToWindow();
 		}
 
 		return ScreenAction.none();
@@ -376,21 +386,11 @@ public:
 
 	override void close()
 	{
-		if (_form !is null)
+		if (!_pad.isNull)
 		{
-			ncuiLibNotErrAny!unpost_form([E_OK, E_NOT_POSTED], _form);
-			ncuiLibNotErr!free_form(_form);
-			_form = null;
+			ncuiLibNotErr!delwin(_pad);
+			_pad = NCWin(null);
 		}
-
-		if (_fieldText !is null)
-		{
-			ncuiLibNotErr!free_field(_fieldText);
-			_fieldText = null;
-		}
-
-		_fields[0] = null;
-		_fields[1] = null;
 
 		if (!_window.isNull)
 		{
@@ -405,6 +405,11 @@ public:
 		}
 
 		_inited = false;
+		_padDirty = true;
+		_lastTextAttr = int.min;
+		_padTop = 0;
+		_innerH = 0;
+		_innerW = 0;
 	}
 
 	~this()
