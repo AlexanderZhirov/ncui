@@ -1,6 +1,7 @@
 module ncui.lib.wrap;
 
 import std.array : appender;
+import std.utf : toUTF32;
 
 private
 {
@@ -219,4 +220,9 @@ dstring[] wrapWordsWide(dstring text, int widthCols)
 	}
 
 	return output.data;
+}
+
+dstring[] wrapWordsWide(string text, int widthCols)
+{
+	return wrapWordsWide(text.toUTF32, widthCols);
 }
