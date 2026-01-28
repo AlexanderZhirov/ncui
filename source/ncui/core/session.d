@@ -134,6 +134,7 @@ private:
 	NCWin _root;
 	bool _ended;
 	SessionConfig _config;
+	bool _suspend;
 
 	// Применяет параметры конфигурации к активной ncurses-сессии.
 	void setup(ref const(SessionConfig) config)
@@ -199,6 +200,38 @@ public:
 		setup(config);
 
 		_config = config;
+	}
+
+	// Временный выход из ncurses.
+	void suspend()
+	{
+		if (_suspend)
+		{
+			return;
+		}
+
+		// Сохранить режим ncurses.
+		ncuiNotErr!def_prog_mode();
+		endwin();
+		// Включить курсор, если был скрыт.
+		curs_set(1);
+
+		_suspend = true;
+	}
+
+	// Вернуться в ncurses, возобновить сеанс.
+	void resume()
+	{
+		if (!_suspend)
+		{
+			return;
+		}
+
+		// Восстановить сохранённый режим.
+		ncuiNotErr!reset_prog_mode();
+		ncuiNotErr!refresh();
+
+		_suspend = false;
 	}
 
 	@property SessionConfig settings()
