@@ -16,7 +16,7 @@ final class TextView : IWidget, IWidgetClosable
 {
 private:
 	// Поле по умолчанию активно.
-	bool _enabled = true;
+	bool _enabled;
 	// Положение и ширина поля.
 	int _y;
 	int _x;
@@ -261,7 +261,7 @@ private:
 	}
 
 public:
-	this(int y, int x, int w, int h, string text = string.init, bool border = true)
+	this(int y, int x, int w, int h, string text = string.init, bool border = true, bool enabled = true)
 	{
 		if (border)
 		{
@@ -280,6 +280,7 @@ public:
 		_height = h;
 
 		_border = border;
+		_enabled = enabled;
 
 		_text = text.wrapWordsWide(innerWidth());
 		_padDirty = true;
