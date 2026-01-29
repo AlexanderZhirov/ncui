@@ -147,17 +147,39 @@ public:
 		}
 	}
 
-	ScreenAction tick(ScreenContext context)
+	int tickMs() const
+	{
+		int best = -1;
+
+		foreach (view; _views)
+		{
+			const int ms = view.tickMs();
+
+			if (ms < 0)
+			{
+				 continue;
+			}
+
+			if (best < 0 || ms < best)
+			{
+				best = ms;
+			}
+		}
+
+		return best;
+	}
+
+	ScreenAction onTick(ScreenContext context)
 	{
 		ensureActiveAllowed();
 
 		foreach (view; _views)
 		{
-			auto a = view.tick(context);
+			auto action = view.onTick(context);
 
-			if (a.kind != ActionKind.None)
+			if (action.kind != ActionKind.None)
 			{
-				return a;
+				return action;
 			}
 		}
 

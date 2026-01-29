@@ -17,6 +17,12 @@ protected:
 	WidgetContainer _ui;
 	IThemeContext _localTheme;
 	bool _built;
+	int _tickMs = -1;
+
+	final void setTickMs(int ms)
+	{
+		_tickMs = (ms < 0) ? -1 : ms;
+	}
 
 	Window ensureWindow(ScreenContext context);
 
@@ -122,6 +128,11 @@ public:
 		render(context);
 
 		return ScreenAction.none();
+	}
+
+	final override int tickMs() const
+	{
+		return _tickMs;
 	}
 
 	final override ScreenAction onTick(ScreenContext context)

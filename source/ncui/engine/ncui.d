@@ -147,6 +147,16 @@ private:
 		}
 	}
 
+	int timeoutFor(IScreen s)
+	{
+		if (auto idle = cast(IIdleScreen) s)
+		{
+			return idle.tickMs();
+		}
+
+		return -1;
+	}
+
 public:
 	this(const SessionConfig config = SessionConfig.init, ITheme initialTheme = null)
 	{
@@ -166,29 +176,35 @@ public:
 		{
 			// Взять из стека последний экран.
 			auto currentScreen = _stack[$ - 1];
+			auto currentWindow = currentScreen.inputWindow();
+
+			if (!currentWindow.isNull)
+			{
+				_session.wait(currentWindow, timeoutFor(currentScreen));
+			}
+
 			// Ожидать события нажатия клавиш в извлеченном из стека экране.
-			auto event = _session.readKey(currentScreen.inputWindow());
+			auto event = _session.readKey(currentWindow);
+
+			ScreenAction action;
 
 			if (event.isErr)
 			{
-				// Если tick включен — обновить экран.
-				if (_session.settings.tickMs > 0)
+				if (auto idle = cast(IIdleScreen) currentScreen)
 				{
-					if (auto idle = cast(IIdleScreen) currentScreen)
-					{
-						apply(idle.onTick(_context));
-					}
-
-					continue;
+					action = idle.onTick(_context);
 				}
-
-				// Если tick выключен, то произошла ошибка.
-				apply(ScreenAction.quit(ScreenResult.error("Input error (wget_wch returned ERR)")));
-				continue;
+				else
+				{
+					action = ScreenAction.none();
+				}
+			}
+			else
+			{
+				// Обработать нажатие клавиши в текущем окне.
+				action = currentScreen.handle(_context, event);
 			}
 
-			// Обработать нажатие клавиши в текущем окне.
-			auto action = currentScreen.handle(_context, event);
 			// Обработать возвращенное действие из окна.
 			apply(action);
 		}

@@ -13,10 +13,16 @@ abstract class WorkspaceScreen : IScreen, IIdleScreen
 protected:
 	Workspace _workspace;
 	bool _built;
+	int _selfTickMs = -1;
 
 	this()
 	{
 		_workspace = new Workspace();
+	}
+
+	final void setTickMs(int ms)
+	{
+		_selfTickMs = (ms < 0) ? -1 : ms;
 	}
 
 	void build(ScreenContext context, Workspace workspace);
@@ -35,6 +41,23 @@ public:
 	override NCWin inputWindow()
 	{
 		return _workspace.inputWindow();
+	}
+
+	override int tickMs() const
+	{
+		const int workspaceTickMs = _workspace.tickMs();
+
+		if (_selfTickMs < 0)
+		{
+			return workspaceTickMs;
+		}
+
+		if (workspaceTickMs < 0)
+		{
+			return _selfTickMs;
+		}
+
+		return (_selfTickMs < workspaceTickMs) ? _selfTickMs : workspaceTickMs;
 	}
 
 	final override void onHide(ScreenContext context)
@@ -65,7 +88,7 @@ public:
 			return action;
 		}
 
-		auto workspaceAction = _workspace.tick(context);
+		auto workspaceAction = _workspace.onTick(context);
 		if (workspaceAction.kind != ActionKind.None)
 		{
 			return workspaceAction;

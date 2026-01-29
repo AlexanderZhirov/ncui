@@ -122,7 +122,7 @@ struct SessionConfig
 	/// Задержка распознавания ESC/escape-последовательностей в миллисекундах.
 	int escDelay = 50;
 	// Таймаут обновления экрана.
-	int tickMs = 50;
+	int tickMs = -1;
 }
 
 /**
@@ -135,6 +135,7 @@ private:
 	bool _ended;
 	SessionConfig _config;
 	bool _suspend;
+	int _tickMs;
 
 	// Применяет параметры конфигурации к активной ncurses-сессии.
 	void setup(ref const(SessionConfig) config)
@@ -170,16 +171,18 @@ private:
 		}
 		// Настройка видимости курсора.
 		ncuiNotErr!curs_set(config.cursor);
-		// Настройка задержки при нажатии на ESC
+		// Настройка задержки при нажатии на ESC.
 		ncuiNotErr!set_escdelay(config.escDelay);
-		// Настройка обработки специальных клавиш
+		// Настройка обработки специальных клавиш.
 		ncuiNotErr!keypad(_root, config.keypad);
+		// Установка таймаута обновления для сессии в целом.
+		_tickMs = config.tickMs;
 	}
 
 public:
 	this(const SessionConfig config)
 	{
-		// Если на этапе инициализации сработает проблема с конфигурированием сессии
+		// Если на этапе инициализации сработает проблема с конфигурированием сессии.
 		scope (failure)
 		{
 			if (cursesInitialized()) {
@@ -188,15 +191,15 @@ public:
 			}
 		}
 
-		// ncurses не должен быть инициализирован (false)
+		// ncurses не должен быть инициализирован (false).
 		ncuiExpectMsg!cursesInitialized("ncurses is already initialized", false);
 		// Корректное чтение юникода.
 		setlocale(LC_ALL, "");
 		_root = NCWin(ncuiNotNull!initscr());
 
-		// Установить флаг инициализации ncurses
+		// Установить флаг инициализации ncurses.
 		gInitialized = true;
-		// Применение конфигурации
+		// Применение конфигурации.
 		setup(config);
 
 		_config = config;
@@ -244,10 +247,13 @@ public:
 		return _root;
 	}
 
+	void wait(NCWin inputWindow, int tickMs)
+	{
+		wtimeout(inputWindow, tickMs > 0 ? tickMs : _tickMs);
+	}
+
 	KeyEvent readKey(NCWin inputWindow)
 	{
-		// Таймаут на ввод: по истечении вернётся ERR (это и будет tick).
-		wtimeout(inputWindow, _config.tickMs > 0 ? _config.tickMs : -1);
 
 		dchar ch;
 		int status = wget_wch(inputWindow, &ch);

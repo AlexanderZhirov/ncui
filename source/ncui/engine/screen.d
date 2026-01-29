@@ -67,4 +67,5 @@ interface ITaggedScreen
 interface IIdleScreen
 {
 	ScreenAction onTick(ScreenContext context);
+	int tickMs() const;
 }

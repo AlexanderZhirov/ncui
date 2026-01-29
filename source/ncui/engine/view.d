@@ -17,19 +17,37 @@ interface IViewBody
 	void close();
 }
 
+abstract class ViewBody : IViewBody
+{
+private:
+	int _tickMs = -1;
+
+protected:
+	final void setTickMs(int ms)
+	{
+		_tickMs = (ms < 0) ? -1 : ms;
+	}
+
+public:
+	final int tickMs() const
+	{
+		return _tickMs;
+	}
+}
+
 final class View
 {
 private:
 	Window _window;
 	Panel _panel;
-	IViewBody _body;
+	ViewBody _body;
 	IThemeContext _localTheme;
 
 	bool _active;
 	bool _focusable = true;
 
 public:
-	this(Window w, IViewBody viewBody, bool focusable = true)
+	this(Window w, ViewBody viewBody, bool focusable = true)
 	{
 		_window = w;
 		_body = viewBody;
@@ -37,19 +55,24 @@ public:
 		_panel = new Panel(_window.handle());
 	}
 
-	ScreenAction tick(ScreenContext context)
+	ScreenAction onTick(ScreenContext context)
 	{
-		if (_body is null)
-		{
-			return ScreenAction.none();
-		}
-
 		if (auto idle = cast(IIdleScreen) _body)
 		{
 			return idle.onTick(context);
 		}
 
 		return ScreenAction.none();
+	}
+
+	int tickMs() const
+	{
+		if (auto idle = cast(IIdleScreen) _body)
+		{
+			return idle.tickMs();
+		}
+
+		return -1;
 	}
 
 	Window window()
