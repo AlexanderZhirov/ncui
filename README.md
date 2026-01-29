@@ -22,7 +22,7 @@
 ```json
 {
 	"dependencies": {
-		"ncui": "~>0.1.0-alpha.2"
+		"ncui": "~>0.1.0-alpha.3"
 	}
 }
 ```
