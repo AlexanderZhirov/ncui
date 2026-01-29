@@ -5,7 +5,7 @@ import ncui;
 import deimos.ncurses;
 import simple;
 
-final class FormBody : IViewBody, ICursorOwner
+final class FormBody : ViewBody, ICursorOwner
 {
 private:
 	WidgetContainer _ui;
@@ -84,7 +84,7 @@ public:
 	}
 }
 
-final class HelpBody : IViewBody
+final class HelpBody : ViewBody
 {
 	override void render(Window w, ScreenContext context, bool active)
 	{
