@@ -149,8 +149,8 @@ public:
 	{
 		if (border)
 		{
-			ncuiExpectMsg!((int value) => value > 3)("Menu.width must be >= 3 when border=true", true, w);
-			ncuiExpectMsg!((int value) => value > 3)("Menu.height must be >= 3 when border=true", true, h);
+			ncuiExpectMsg!((int value) => value >= 3)("Menu.width must be >= 3 when border=true", true, w);
+			ncuiExpectMsg!((int value) => value >= 3)("Menu.height must be >= 3 when border=true", true, h);
 		}
 		else
 		{
