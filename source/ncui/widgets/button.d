@@ -14,7 +14,7 @@ final class Button : IWidget
 {
 private:
 	// Кнопка по умолчанию активна.
-	bool _enabled = true;
+	bool _enabled;
 	// Опциональная функция обратного вызова, при нажатии на кнопку.
 	OnClick _onClick;
 	// Координаты начала рисования кнопки.
@@ -25,7 +25,7 @@ private:
 	string _decor;
 	int _width;
 public:
-	this(int y, int x, string text, OnClick onClick = null)
+	this(int y, int x, string text, OnClick onClick = null, bool e = true)
 	{
 		_y = y;
 		_x = x;
@@ -33,6 +33,7 @@ public:
 		_decor = "[ " ~ text ~ " ]";
 		_width = cast(int) _decor.length;
 		_onClick = onClick;
+		_enabled = e;
 	}
 
 	override @property bool focusable()
