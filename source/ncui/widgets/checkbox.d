@@ -60,6 +60,11 @@ public:
 		notifyChange();
 	}
 
+	@property bool isChecked()
+	{
+		return _checked;
+	}
+
 	void toggle()
 	{
 		setChecked(!_checked);
