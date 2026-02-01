@@ -23,7 +23,7 @@ final class TextBox : IWidget, IWidgetClosable, ICursorOwner
 {
 private:
 	// Поле по умолчанию активно.
-	bool _enabled = true;
+	bool _enabled;
 	// Положение.
 	int _y;
 	int _x;
@@ -241,7 +241,8 @@ public:
 	this(int y, int x, int w, bool hidden,
 		string label = string.init,
 		string initText = string.init,
-		string mask = string.init)
+		string mask = string.init,
+		bool e = true)
 	{
 		// Ширина обязана быть ненулевой.
 		ncuiExpectMsg!((int value) => value > 0)("TextBox.width must be > 0", true, w);
@@ -272,6 +273,12 @@ public:
 
 		_length = _text.length;
 		_cursorPosition = _length;
+		_enabled = e;
+	}
+
+	void setEnabled(bool e)
+	{
+		_enabled = e;
 	}
 
 	@property int width()
