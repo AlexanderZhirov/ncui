@@ -21,8 +21,10 @@ public:
 
 	override void layout(Window window, ScreenContext context)
 	{
+		auto text = context.data.get!string;
+
 		_window.border();
-		_window.put(1, 2, "Пример простого скрина с кнопками");
+		_window.put(1, 2, text);
 	}
 
 	override void build(Window window, ScreenContext context, WidgetContainer ui)
