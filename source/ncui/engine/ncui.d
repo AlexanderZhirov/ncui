@@ -7,6 +7,7 @@ import core.stdc.stdlib : EXIT_SUCCESS, EXIT_FAILURE, exit;
 import std.array : popBack;
 
 import ncui.lib.logger;
+import ncui.lib.userdata;
 import ncui.core.session;
 import ncui.engine.screen;
 import ncui.engine.action;
@@ -162,7 +163,14 @@ public:
 	{
 		_session = new Session(config);
 		_theme = new ThemeManager(initialTheme);
-		_context = ScreenContext(_session, _theme);
+		_context = ScreenContext(_session, _theme, new UserData());
+	}
+
+	this(T)(const SessionConfig config = SessionConfig.init, ITheme initialTheme = null, T userdata)
+	{
+		_session = new Session(config);
+		_theme = new ThemeManager(initialTheme);
+		_context = ScreenContext(_session, _theme, new UserData(userdata));
 	}
 
 	ScreenResult run(IScreen screen)

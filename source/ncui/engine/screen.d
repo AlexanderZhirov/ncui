@@ -9,6 +9,7 @@ import ncui.core.ncwin;
 import ncui.core.window;
 import ncui.engine.theme;
 import ncui.engine.action;
+import ncui.lib.userdata;
 
 /**
  * Контекст выполнения экрана.
@@ -18,12 +19,14 @@ struct ScreenContext
 	Session session;
 	ThemeManager themeManager;
 	IThemeContext theme;
+	UserData data;
 
-	this(Session s, ThemeManager tm)
+	this(Session s, ThemeManager tm, UserData d)
 	{
 		session = s;
 		themeManager = tm;
 		theme = tm;
+		data = d;
 	}
 }
 
