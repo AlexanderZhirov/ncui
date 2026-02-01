@@ -87,6 +87,16 @@ public:
 		ncuiNotErr!wborder(_window, ls, rs, ts, bs, tl, tr, bl, br);
 	}
 
+	void horizontalLine(int y, int x, int length)
+	{
+		ncuiNotErr!mvwhline(_window, y, x, ACS_HLINE, length);
+	}
+
+	void verticalLine(int y, int x, int length)
+	{
+		ncuiNotErr!mvwvline(_window, y, x, ACS_VLINE, length);
+	}
+
 	void erase()
 	{
 		ncuiNotErr!werase(_window);
