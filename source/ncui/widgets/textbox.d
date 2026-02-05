@@ -5,6 +5,7 @@ import deimos.form;
 import ncui.widgets.widget;
 import ncui.core.session : Cursor;
 import ncui.core.ncwin;
+import ncui.core.ncform;
 import ncui.core.window;
 import ncui.core.event;
 import ncui.engine.screen;
@@ -56,20 +57,20 @@ private:
 	// Фокус текущего поля.
 	bool _focused;
 
-	FIELD* _fieldLabel;
-	FIELD* _fieldInput;
-	FIELD*[3] _fields;
-	FORM* _form;
+	NCField _fieldLabel;
+	NCField _fieldInput;
+	NCField[2] _fields;
+	NCForm _form;
 	NCWin _window;
 
 	void driveRequest(int request)
 	{
-		ncuiLibNotErr!form_driver_w(_form, KEY_CODE_YES, request);
+		_form.formdriverw(KEY_CODE_YES, request);
 	}
 
 	void driveChar(dchar ch)
 	{
-		ncuiLibNotErr!form_driver_w(_form, OK, ch);
+		_form.formdriverw(OK, ch);
 	}
 
 	dchar modifyChar(dchar symbol)
@@ -86,7 +87,7 @@ private:
 
 		// Возврат курсора в начало строки.
 		// Используется данный метод, т.к. REQ_BEG_LINE/REQ_BEG_FIELD режут ведущие пробелы.
-		while (ncuiLibNotErrAny!form_driver_w([E_OK, E_REQUEST_DENIED], _form, KEY_CODE_YES, REQ_LEFT_CHAR) == E_OK) {}
+		while (_form.formdriverw(KEY_CODE_YES, REQ_LEFT_CHAR, [E_OK, E_REQUEST_DENIED]) == E_OK) {}
 		_cursorPosition = 0;
 
 		if (position == 0)
@@ -106,7 +107,7 @@ private:
 	void modifyField()
 	{
 		dstring currentText = _hidden ? _hiddenSymbol.repeat(_length).array.idup : _text;
-		ncuiLibNotErr!set_field_buffer(_fieldInput, 0, currentText.toUTF8.toStringz);
+		_fieldInput.setfieldbuffer(currentText.toUTF8);
 	}
 
 	bool isCtrlChar(dchar ch)
@@ -138,21 +139,19 @@ private:
 		_window.derwin(window.handle(), 1, _widthTotal, _y, _x);
 		_window.syncok();
 		// Создание поля ввода.
-		_fieldInput = ncuiNotNull!new_field(1, _widthField, 0, _widthTotal - _widthField, 0, 0);
+		_fieldInput.newfield(1, _widthField, 0, _widthTotal - _widthField, 0, 0);
 
 		// Если метка поля была установлена.
 		if (_widthLabel > 0)
 		{
 			// Создание метки поля.
-			_fieldLabel = ncuiNotNull!new_field(1, _widthLabel, 0, 0, 0, 0);
+			_fieldLabel.newfield(1, _widthLabel, 0, 0, 0, 0);
 			// Установка опций для метки поля.
-			ncuiLibNotErr!set_field_opts(_fieldLabel, O_VISIBLE | O_PUBLIC | O_AUTOSKIP);
-			// Снять активность поля.
-			ncuiLibNotErr!field_opts_off(_fieldLabel, O_ACTIVE);
-			// Запретить поле для редактирования
-			ncuiLibNotErr!field_opts_off(_fieldLabel, O_EDIT);
+			_fieldLabel.setfieldopts(O_VISIBLE | O_PUBLIC | O_AUTOSKIP);
+			// Снять активность поля, запретить поле для редактирования.
+			_fieldLabel.fieldoptsoff(O_ACTIVE | O_EDIT);
 			// Установка названия метки.
-			ncuiLibNotErr!set_field_buffer(_fieldLabel, 0, _label.toUTF8.toStringz);
+			_fieldLabel.setfieldbuffer(_label.toUTF8);
 
 			_fields[0] = _fieldLabel;
 			_fields[1] = _fieldInput;
@@ -164,24 +163,20 @@ private:
 			_fields[1] = null;
 		}
 
-		_fields[2] = null;
-
 		// Отключение опции автоперехода к следующему полю при заполнении.
-		ncuiLibNotErr!field_opts_off(_fieldInput, O_AUTOSKIP);
 		// Отключение статического режима поля — позволяет использовать горизонтальную прокрутку.
-		ncuiLibNotErr!field_opts_off(_fieldInput, O_STATIC);
 		// Выключить удаление ведущих пробелов.
-		ncuiLibNotErr!field_opts_off(_fieldInput, O_BLANK);
+		_fieldInput.fieldoptsoff(O_AUTOSKIP | O_STATIC | O_BLANK);
 		// Установка максимального размера текста в поле (ограничение на 255 символов).
-		ncuiLibNotErr!set_max_field(_fieldInput, _buffer);
+		_fieldInput.setmaxfield(_buffer);
 		// Создание формы.
-		_form = ncuiNotNull!new_form(cast(FIELD**) _fields);
+		_form.newform(_fields);
 		// Привязка формы к родителю.
-		ncuiLibNotErr!set_form_win(_form, window.handle());
+		_form.setformwin(window);
 		// Привязка формы к внутреннему окну.
-		ncuiLibNotErr!set_form_sub(_form, _window);
+		_form.setformsub(_window);
 		// Публикация формы.
-		ncuiLibNotErrAny!post_form([E_OK, E_POSTED], _form);
+		_form.postform();
 		// Перевод поля в режим вставки символа (insert mode).
 		driveRequest(REQ_INS_MODE);
 		// Установка данных в поле формы.
@@ -212,8 +207,8 @@ private:
 
 			const int lattr = context.theme.attr(lid);
 
-			ncuiLibNotErr!set_field_fore(_fieldLabel, lattr);
-			ncuiLibNotErr!set_field_back(_fieldLabel, lattr);
+			_fieldLabel.setfieldfore(lattr);
+			_fieldLabel.setfieldback(lattr);
 		}
 
 		StyleId iid;
@@ -233,8 +228,8 @@ private:
 
 		const int attr = context.theme.attr(iid);
 
-		ncuiLibNotErr!set_field_fore(_fieldInput, attr);
-		ncuiLibNotErr!set_field_back(_fieldInput, attr);
+		_fieldInput.setfieldfore(attr);
+		_fieldInput.setfieldback(attr);
 
 		// Не перерисовывать курсор лишний раз, если поле активно.
 		if (_focused != focused)
@@ -343,9 +338,9 @@ public:
 			return;
 		}
 
-		ncuiLibNotErrAny!set_current_field([E_OK, E_CURRENT], _form, _fieldInput);
+		_form.setcurrentfield(_fieldInput);
 		ncuiNotErr!curs_set(Cursor.high);
-		ncuiLibNotErr!pos_form_cursor(_form);
+		_form.posformcursor();
 	}
 
 	override void render(Window window, ScreenContext context, bool focused)
@@ -465,28 +460,11 @@ public:
 
 	override void close()
 	{
-		if (_form !is null)
-		{
-			ncuiLibNotErrAny!unpost_form([E_OK, E_NOT_POSTED], _form);
-			ncuiLibNotErr!free_form(_form);
-			_form = null;
-		}
+		_form.unpostform();
+		_form.freeform();
 
-		if (_fieldLabel !is null)
-		{
-			ncuiLibNotErr!free_field(_fieldLabel);
-			_fieldLabel = null;
-		}
-
-		if (_fieldInput !is null)
-		{
-			ncuiLibNotErr!free_field(_fieldInput);
-			_fieldInput = null;
-		}
-
-		_fields[0] = null;
-		_fields[1] = null;
-		_fields[2] = null;
+		_fieldLabel.freefield();
+		_fieldInput.freefield();
 
 		_window.delwin();
 
