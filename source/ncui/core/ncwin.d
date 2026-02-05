@@ -50,8 +50,6 @@ struct NCWin
 
 	void syncok()
 	{
-		if (isNull) return;
-
 		ncuiNotErr!(dc.syncok)(_p, true);
 	}
 
@@ -65,8 +63,6 @@ struct NCWin
 
 	void werase()
 	{
-		if (isNull) return;
-
 		ncuiNotErr!(dc.werase)(_p);
 	}
 
@@ -82,22 +78,16 @@ struct NCWin
 	*/
 	void copywin(WINDOW* sw, int ssy, int ssx, int dsy, int dsx, int dey, int dex)
 	{
-		if (isNull) return;
-
 		ncuiNotErr!(dc.copywin)(sw, _p, ssy, ssx, dsy, dsx, dey, dex, 0);
 	}
 
 	void copywin(NCWin sw, int ssy, int ssx, int dsy, int dsx, int dey, int dex)
 	{
-		if (isNull) return;
-
 		ncuiNotErr!(dc.copywin)(sw.ptr, _p, ssy, ssx, dsy, dsx, dey, dex, 0);
 	}
 
 	void wbkgd(int attr)
 	{
-		if (isNull) return;
-
 		ncuiNotErr!(dc.wbkgd)(_p, attr);
 	}
 
@@ -108,8 +98,6 @@ struct NCWin
 
 	void wattron(int attr)
 	{
-		if (isNull) return;
-
 		if (attr != 0)
 		{
 			ncuiNotErr!(dc.wattron)(_p, attr);
@@ -118,12 +106,17 @@ struct NCWin
 
 	void wattroff(int attr)
 	{
-		if (isNull) return;
-
 		if (attr != 0)
 		{
 			ncuiNotErr!(dc.wattroff)(_p, attr);
 		}
+	}
+
+	void boxattr(int vl, int hl, int attr)
+	{
+		wattron(attr);
+		box(vl, hl);
+		wattroff(attr);
 	}
 
 	/**
@@ -133,8 +126,6 @@ struct NCWin
 	*/
 	void wmove(int cpy, int cpx)
 	{
-		if (isNull) return;
-
 		ncuiNotErr!(dc.wmove)(_p, cpy, cpx);
 	}
 
@@ -147,9 +138,23 @@ struct NCWin
 	*/
 	void mvwaddnwstr(int cpy, int cpx, dstring ws)
 	{
-		if (isNull) return;
-
 		ncuiNotErr!(dc.mvwaddnwstr)(_p, cpy, cpx, ws.ptr, cast(int) ws.length);
+	}
+
+	void mvwaddnwstrs(dstring[] text, int attr)
+	{
+		wattron(attr);
+		foreach (i, line; text)
+		{
+			if (line.length == 0)
+			{
+				wmove(cast(int)i, 0);
+				continue;
+			}
+
+			mvwaddnwstr(cast(int) i, 0, line);
+		}
+		wattroff(attr);
 	}
 
 	/**
@@ -159,8 +164,6 @@ struct NCWin
 	*/
 	void box(int vl, int hl)
 	{
-		if (isNull) return;
-
 		ncuiNotErr!(dc.box)(_p, vl, hl);
 	}
 }

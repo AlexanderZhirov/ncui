@@ -2,12 +2,11 @@ module ncui.core.ncform;
 
 import deimos.form;
 
-import ncui.core.window;
 import ncui.core.ncwin;
 import ncui.lib.checks;
 import ncui.lib.logger;
 
-import std.string : toStringz, fromStringz;
+import std.string : toStringz;
 
 private alias df = deimos.form;
 
@@ -57,50 +56,36 @@ struct NCField
 
 	void setfieldopts(int opts)
 	{
-		if (isNull) return;
-
 		ncuiLibNotErr!(df.set_field_opts)(_p, opts);
 	}
 
 	void fieldoptsoff(int opts)
 	{
-		if (isNull) return;
-
 		ncuiLibNotErr!(df.field_opts_off)(_p, opts);
 	}
 
 	void fieldoptson(int opts)
 	{
-		if (isNull) return;
-
 		ncuiLibNotErr!(df.field_opts_on)(_p, opts);
 	}
 
 	void setfieldbuffer(string text)
 	{
-		if (isNull) return;
-
 		ncuiLibNotErr!(df.set_field_buffer)(_p, 0, text.toStringz);
 	}
 
 	void setmaxfield(int size)
 	{
-		if (isNull) return;
-
 		ncuiLibNotErr!(df.set_max_field)(_p, size);
 	}
 
 	void setfieldfore(int attr)
 	{
-		if (isNull) return;
-
 		ncuiLibNotErr!(df.set_field_fore)(_p, attr);
 	}
 
 	void setfieldback(int attr)
 	{
-		if (isNull) return;
-
 		ncuiLibNotErr!(df.set_field_back)(_p, attr);
 	}
 
@@ -147,22 +132,11 @@ struct NCForm
 
 	void newform(NCField[] fields)
 	{
-		// _fields.length = fields.length + 1;
-
-		// foreach (i, ref f; fields)
-		// {
-		// 	_fields[i] = f.ptr;
-		// }
-
-		// _fields[$ - 1] = null;
-
 		_p = isNull ? ncuiNotNull!(df.new_form)(cast(FIELD**) fields) : _p;
 	}
 
 	int formdriverw(int command, dchar wc, int[] code = [])
 	{
-		if (isNull) return 0;
-
 		if (code.length > 0)
 		{
 			return ncuiLibNotErrAny!(df.form_driver_w)(code, _p, command, wc);
@@ -173,38 +147,28 @@ struct NCForm
 		}
 	}
 
-	void setformwin(Window window)
+	void setformwin(NCWin window)
 	{
-		if (isNull) return;
-
-		ncuiLibNotErr!(df.set_form_win)(_p, window.handle());
+		ncuiLibNotErr!(df.set_form_win)(_p, window);
 	}
 
 	void setformsub(NCWin window)
 	{
-		if (isNull) return;
-
 		ncuiLibNotErr!(df.set_form_sub)(_p, window);
 	}
 
 	void postform()
 	{
-		if (isNull) return;
-
 		ncuiLibNotErrAny!(df.post_form)([E_OK, E_POSTED], _p);
 	}
 
 	void posformcursor()
 	{
-		if (isNull) return;
-
 		ncuiLibNotErr!(df.pos_form_cursor)(_p);
 	}
 
 	void setcurrentfield(NCField field)
 	{
-		if (isNull) return;
-
 		ncuiLibNotErrAny!(df.set_current_field)([E_OK, E_CURRENT], _p, field);
 	}
 
