@@ -135,8 +135,8 @@ private:
 		}
 
 		// Создание внутреннего окна.
-		_window = ncuiNotNull!derwin(window.handle(), 1, _widthTotal, _y, _x);
-		ncuiNotErr!syncok(_window, true);
+		_window.derwin(window.handle(), 1, _widthTotal, _y, _x);
+		_window.syncok();
 		// Создание поля ввода.
 		_fieldInput = ncuiNotNull!new_field(1, _widthField, 0, _widthTotal - _widthField, 0, 0);
 
@@ -488,11 +488,7 @@ public:
 		_fields[1] = null;
 		_fields[2] = null;
 
-		if (!_window.isNull)
-		{
-			ncuiNotErr!delwin(_window);
-			_window = NCWin(null);
-		}
+		_window.delwin();
 
 		_inited = false;
 	}

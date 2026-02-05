@@ -103,39 +103,27 @@ private:
 		}
 
 		// Если pad существует — пересобрать с существующими изменениями (_padDirty == true).
-		if (!_pad.isNull)
-		{
-			ncuiNotErr!delwin(_pad);
-			_pad = NCWin(null);
-		}
+		_pad.delwin();
+		_pad.newpad(padHeight(), _innerW);
+		_pad.wbkgd(attr);
+		_pad.werase();
 
-		_pad = ncuiNotNull!newpad(padHeight(), _innerW);
-
-		ncuiNotErr!wbkgd(_pad, attr);
-		ncuiNotErr!werase(_pad);
-
-		if (attr != 0)
-		{
-			ncuiNotErr!wattron(_pad, attr);
-		}
+		_pad.wattron(attr);
 
 		scope (exit)
 		{
-			if (attr != 0)
-			{
-				ncuiNotErr!wattroff(_pad, attr);
-			}
+			_pad.wattroff(attr);
 		}
 
 		foreach (i, line; _text)
 		{
 			if (line.length == 0)
 			{
-				ncuiNotErr!wmove(_pad, cast(int)i, 0);
+				_pad.wmove(cast(int)i, 0);
 				continue;
 			}
 
-			ncuiNotErr!mvwaddnwstr(_pad, cast(int) i, 0, line.ptr, cast(int) line.length);
+			_pad.mvwaddnwstr(cast(int) i, 0, line);
 		}
 
 		_lastTextAttr = attr;
@@ -145,8 +133,8 @@ private:
 	// Создание окна + границы.
 	void ensureWindows(Window window)
 	{
-		_windowBorder = ncuiNotNull!derwin(window.handle(), _height, _width, _y, _x);
-		ncuiNotErr!syncok(_windowBorder, true);
+		_windowBorder.derwin(window.handle(), _height, _width, _y, _x);
+		_windowBorder.syncok();
 
 		_innerH = innerHeight();
 		_innerW = innerWidth();
@@ -154,15 +142,15 @@ private:
 		const int offY = _border ? 1 : 0;
 		const int offX = _border ? 1 : 0;
 
-		_window = ncuiNotNull!derwin(_windowBorder, _innerH, _innerW, offY, offX);
-		ncuiNotErr!syncok(_window, true);
+		_window.derwin(_windowBorder, _innerH, _innerW, offY, offX);
+		_window.syncok();
 	}
 
 	// Скопировать холст pad на внутреннее окно.
 	void blitPadToWindow()
 	{
-		ncuiNotErr!werase(_window);
-		ncuiNotErr!copywin(_pad, _window, _padTop, 0, 0, 0, _innerH - 1, _innerW - 1, 0);
+		_window.werase();
+		_window.copywin(_pad, _padTop, 0, 0, 0, _innerH - 1, _innerW - 1);
 	}
 
 	// Создание виджета.
@@ -189,18 +177,18 @@ private:
 
 			if (attr != 0)
 			{
-				ncuiNotErr!wattron(_windowBorder, attr);
+				_windowBorder.wattron(attr);
 			}
 
 			scope (exit)
 			{
 				if (attr != 0)
 				{
-					ncuiNotErr!wattroff(_windowBorder, attr);
+					_windowBorder.wattroff(attr);
 				}
 			}
 
-			ncuiNotErr!box(_windowBorder, 0, 0);
+			_windowBorder.box(0, 0);
 		}
 	}
 
@@ -387,23 +375,9 @@ public:
 
 	override void close()
 	{
-		if (!_pad.isNull)
-		{
-			ncuiLibNotErr!delwin(_pad);
-			_pad = NCWin(null);
-		}
-
-		if (!_window.isNull)
-		{
-			ncuiNotErr!delwin(_window);
-			_window = NCWin(null);
-		}
-
-		if (!_windowBorder.isNull)
-		{
-			ncuiLibNotErr!delwin(_windowBorder);
-			_windowBorder = NCWin(null);
-		}
+		_pad.delwin();
+		_window.delwin();
+		_windowBorder.delwin();
 
 		_inited = false;
 		_padDirty = true;

@@ -110,8 +110,8 @@ private:
 		}
 
 		// Окно с рамкой.
-		_windowBorder = ncuiNotNull!derwin(window.handle(), _height, _width, _y, _x);
-		ncuiNotErr!syncok(_windowBorder, true);
+		_windowBorder.derwin(window.handle(), _height, _width, _y, _x);
+		_windowBorder.syncok();
 
 		const int innerH = _border ? _height - 2 : _height;
 		const int innerW = _border ? _width - 2 : _width;
@@ -119,8 +119,8 @@ private:
 		const int offX = _border ? 1 : 0;
 
 		// Создание внутреннего окна.
-		_window = ncuiNotNull!derwin(_windowBorder, innerH, innerW, offY, offX);
-		ncuiNotErr!syncok(_window, true);
+		_window.derwin(_windowBorder, innerH, innerW, offY, offX);
+		_window.syncok();
 		// +1 для null строки.
 		_items.length = _labels.length + 1;
 
@@ -261,17 +261,8 @@ public:
 		_items.length = 0;
 		_labels.length = 0;
 
-		if (!_window.isNull)
-		{
-			ncuiLibNotErr!delwin(_window);
-			_window = NCWin(null);
-		}
-
-		if (!_windowBorder.isNull)
-		{
-			ncuiLibNotErr!delwin(_windowBorder);
-			_windowBorder = NCWin(null);
-		}
+		_window.delwin();
+		_windowBorder.delwin();
 
 		_inited = false;
 	}
