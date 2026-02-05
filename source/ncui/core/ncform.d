@@ -156,7 +156,7 @@ struct NCForm
 
 		// _fields[$ - 1] = null;
 
-		_p = ncuiNotNull!(df.new_form)(cast(FIELD**) fields.ptr);
+		_p = isNull ? ncuiNotNull!(df.new_form)(cast(FIELD**) fields) : _p;
 	}
 
 	int formdriverw(int command, dchar wc, int[] code = [])
