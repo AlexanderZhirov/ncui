@@ -1,7 +1,6 @@
 module ncui.widgets.menu;
 
 import deimos.menu;
-import deimos.ncurses;
 
 import ncui.widgets.widget;
 import ncui.core.ncwin;
@@ -13,8 +12,6 @@ import ncui.engine.action;
 import ncui.engine.theme;
 import ncui.lib.checks;
 
-import std.utf : toUTF32, toUTF8;
-import std.string : toStringz, fromStringz;
 import std.algorithm : min;
 
 alias AcceptCallback = ScreenAction delegate(size_t index, string label);
@@ -86,19 +83,10 @@ private:
 
 		if (_border)
 		{
-			const int a = context.theme.attr(focused ? StyleId.BorderActive : StyleId.BorderInactive);
-
-			_windowBorder.wattron(a);
-
-			scope (exit)
-			{
-				_windowBorder.wattroff(a);
-			}
-
-			_windowBorder.box(0, 0);
+			const int attr = context.theme.attr(focused ? StyleId.BorderActive : StyleId.BorderInactive);
+			_windowBorder.boxattr(0, 0, attr);
 		}
 	}
-
 
 	void ensureCreated(Window window)
 	{
@@ -119,15 +107,12 @@ private:
 		// Создание внутреннего окна.
 		_window.derwin(_windowBorder, innerH, innerW, offY, offX);
 		_window.syncok();
-		// +1 для null строки.
-		_items.length = _labels.length;
 
+		_items.length = _labels.length;
 		foreach (index, label; _labels)
 		{
 			_items[index].newitem(label.name, label.description);
 		}
-
-		// _items[_labels.length] = null;
 
 		_menu.newmenu(_items);
 

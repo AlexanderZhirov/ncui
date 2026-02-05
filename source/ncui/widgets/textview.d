@@ -1,7 +1,5 @@
 module ncui.widgets.textview;
 
-import deimos.ncurses;
-
 import ncui.widgets.widget;
 import ncui.core.window;
 import ncui.core.event;
@@ -107,24 +105,7 @@ private:
 		_pad.newpad(padHeight(), _innerW);
 		_pad.wbkgd(attr);
 		_pad.werase();
-
-		_pad.wattron(attr);
-
-		scope (exit)
-		{
-			_pad.wattroff(attr);
-		}
-
-		foreach (i, line; _text)
-		{
-			if (line.length == 0)
-			{
-				_pad.wmove(cast(int)i, 0);
-				continue;
-			}
-
-			_pad.mvwaddnwstr(cast(int) i, 0, line);
-		}
+		_pad.mvwaddnwstrs(_text, attr);
 
 		_lastTextAttr = attr;
 		_padDirty = false;
@@ -334,6 +315,8 @@ public:
 		}
 
 		bool changed = false;
+
+		import deimos.ncurses : KEY_UP, KEY_DOWN, KEY_PPAGE, KEY_NPAGE, KEY_HOME, KEY_END;
 
 		switch (event.ch)
 		{

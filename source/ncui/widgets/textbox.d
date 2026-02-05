@@ -13,9 +13,7 @@ import ncui.engine.action;
 import ncui.engine.theme;
 import ncui.lib.checks;
 
-import std.string : toStringz, fromStringz;
 import std.utf : toUTF8, toUTF32;
-import std.algorithm : min;
 import std.range : repeat;
 import std.array : array;
 import std.regex : matchFirst, regex, Regex;
@@ -172,7 +170,7 @@ private:
 		// Создание формы.
 		_form.newform(_fields);
 		// Привязка формы к родителю.
-		_form.setformwin(window);
+		_form.setformwin(window.handle());
 		// Привязка формы к внутреннему окну.
 		_form.setformsub(_window);
 		// Публикация формы.
