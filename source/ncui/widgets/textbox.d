@@ -80,7 +80,7 @@ private:
 
 	void moveCursor(size_t position)
 	{
-		if (_form is null)
+		if (_form.isNull)
 		{
 			return;
 		}
@@ -187,12 +187,12 @@ private:
 
 	void applyTheme(ScreenContext context, bool focused)
 	{
-		if (!_inited || _form is null || _fieldInput is null)
+		if (!_inited || _form.isNull || _fieldInput.isNull)
 		{
 			return;
 		}
 
-		if (_fieldLabel !is null)
+		if (!_fieldLabel.isNull)
 		{
 			StyleId lid;
 
@@ -310,7 +310,7 @@ public:
 		_length = _text.length;
 		_cursorPosition = _length;
 
-		if (!_inited || _form is null || _fieldInput is null)
+		if (!_inited || _form.isNull || _fieldInput.isNull)
 		{
 			return;
 		}
@@ -333,7 +333,7 @@ public:
 	// При фокусе виджет получает курсор после отрисовки всех виджетов.
 	override void placeCursor(ScreenContext context)
 	{
-		if (!_enabled || _form is null || _fieldInput is null)
+		if (!_enabled || _form.isNull || _fieldInput.isNull)
 		{
 			return;
 		}
@@ -353,7 +353,7 @@ public:
 
 	override ScreenAction handle(ScreenContext context, KeyEvent event)
 	{
-		if (!_enabled || _form is null || isEnter(event))
+		if (!_enabled || _form.isNull || isEnter(event))
 		{
 			return ScreenAction.none();
 		}
