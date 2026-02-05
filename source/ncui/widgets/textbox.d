@@ -109,6 +109,13 @@ private:
 		ncuiLibNotErr!set_field_buffer(_fieldInput, 0, currentText.toUTF8.toStringz);
 	}
 
+	bool isCtrlChar(dchar ch)
+	{
+		// ASCII control: 0x00..0x1F и DEL(0x7F)
+		// Сюда входят Ctrl+A..Z (1..26), Tab(9), Enter(10/13), Esc(27) и т.д.
+		return (ch <= 0x1F) || (ch == 0x7F);
+	}
+
 	bool allowedChar(dchar symbol)
 	{
 		if (!_hasMask)
@@ -424,6 +431,10 @@ public:
 
 					validation = true;
 				}
+			}
+			else if (isCtrlChar(event.ch))
+			{
+				return ScreenAction.none();
 			}
 			else if (_length < _buffer && allowedChar(event.ch))
 			{
