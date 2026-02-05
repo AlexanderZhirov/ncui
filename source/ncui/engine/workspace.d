@@ -209,6 +209,9 @@ public:
 	{
 		ensureActiveAllowed();
 
+		// Установка курсора по-умолчанию.
+		active.window.setCursor(context.session.settings.cursor);
+
 		foreach (view; _views)
 		{
 			const bool focused = _workspaceActive && view.active;
