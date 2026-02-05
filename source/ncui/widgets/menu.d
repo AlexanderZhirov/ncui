@@ -5,6 +5,7 @@ import deimos.ncurses;
 
 import ncui.widgets.widget;
 import ncui.core.ncwin;
+import ncui.core.ncmenu;
 import ncui.core.window;
 import ncui.core.event;
 import ncui.engine.screen;
@@ -39,65 +40,62 @@ private:
 	bool _inited;
 
 	MenuLabel[] _labels;
-	const (char)* _mark = " > ".ptr;
+	string _mark = " > ";
 
 	NCWin _window;
 	NCWin _windowBorder;
-	MENU* _menu;
-	ITEM*[] _items;
+	NCMenu _menu;
+	NCItem[] _items;
 
 	AcceptCallback _accept;
 
-	size_t selectedIndex() const
+	size_t selectedIndex()
 	{
-		if (_labels.length == 0 || _menu is null)
+		if (_labels.length == 0 || _menu.isNull)
 		{
 			return 0;
 		}
 
-		ITEM* item = current_item(_menu);
+		NCItem item = _menu.currentitem();
 
-		if (item is null)
+		if (item.isNull)
 		{
 			return 0;
 		}
 
-		return min(item_index(item), cast(int) _labels.length - 1);
+		return min(item.itemindex(), cast(int) _labels.length - 1);
 	}
 
 	int driveAllowDenied(int request)
 	{
-		return ncuiLibNotErrAny!menu_driver([E_OK, E_REQUEST_DENIED], _menu, request);
+		return _menu.menudriver(request, [E_OK, E_REQUEST_DENIED]);
 	}
 
 	void applyMenuTheme(ScreenContext context, bool focused)
 	{
-		if (_menu !is null)
+		if (!_menu.isNull)
 		{
 			const int backAttr = context.theme.attr(StyleId.MenuItem);
 			const int foreAttr = context.theme.attr(focused ? StyleId.MenuItemActive : StyleId.MenuItem);
 			const int greyAttr = context.theme.attr(StyleId.MenuItemInactive);
 
-			ncuiLibNotErr!set_menu_back(_menu, backAttr);
-			ncuiLibNotErr!set_menu_fore(_menu, foreAttr);
-			ncuiLibNotErr!set_menu_grey(_menu, greyAttr);
+			_menu.setmenuback(backAttr);
+			_menu.setmenufore(foreAttr);
+			_menu.setmenugrey(greyAttr);
 		}
 
 		if (_border)
 		{
 			const int a = context.theme.attr(focused ? StyleId.BorderActive : StyleId.BorderInactive);
 
-			if (a != 0)
-			{
-				ncuiNotErr!wattron(_windowBorder, a);
-			}
+			_windowBorder.wattron(a);
 
 			scope (exit)
 			{
-				if (a != 0) ncuiNotErr!wattroff(_windowBorder, a);
+				_windowBorder.wattroff(a);
 			}
 
-			ncuiNotErr!box(_windowBorder, 0, 0);
+			_windowBorder.box(0, 0);
 		}
 	}
 
@@ -122,24 +120,24 @@ private:
 		_window.derwin(_windowBorder, innerH, innerW, offY, offX);
 		_window.syncok();
 		// +1 для null строки.
-		_items.length = _labels.length + 1;
+		_items.length = _labels.length;
 
 		foreach (index, label; _labels)
 		{
-			_items[index] = ncuiNotNull!new_item(label.name.toStringz, label.description.toStringz);
+			_items[index].newitem(label.name, label.description);
 		}
 
-		_items[_labels.length] = null;
+		// _items[_labels.length] = null;
 
-		_menu = ncuiNotNull!new_menu(_items.ptr);
+		_menu.newmenu(_items);
 
-		ncuiLibNotErr!set_menu_win(_menu, _windowBorder);
-		ncuiLibNotErr!set_menu_sub(_menu, _window);
-		ncuiLibNotErr!set_menu_format(_menu, innerH, 1);
+		_menu.setmenuwin(_windowBorder);
+		_menu.setmenusub(_window);
+		_menu.setmenuformat(innerH, 1);
 
-		ncuiLibNotErr!set_menu_mark(_menu, _mark);
+		_menu.setmenumark(_mark);
 		// Публикация формы.
-		ncuiLibNotErrAny!post_menu([E_OK, E_POSTED], _menu);
+		_menu.postmenu();
 
 		_inited = true;
 	}
@@ -199,7 +197,7 @@ public:
 
 	override ScreenAction handle(ScreenContext context, KeyEvent event)
 	{
-		if (!_enabled || _menu is null)
+		if (!_enabled || _menu.isNull)
 		{
 			return ScreenAction.none();
 		}
@@ -243,19 +241,12 @@ public:
 
 	override void close()
 	{
-		if (_menu !is null)
-		{
-			ncuiLibNotErrAny!unpost_menu([E_OK, E_NOT_POSTED], _menu);
-			ncuiLibNotErr!free_menu(_menu);
-			_menu = null;
-		}
+		_menu.unpostmenu();
+		_menu.freemenu();
 
 		foreach (item; _items)
 		{
-			if (item !is null)
-			{
-				ncuiLibNotErr!free_item(item);
-			}
+			item.freeitem();
 		}
 
 		_items.length = 0;
