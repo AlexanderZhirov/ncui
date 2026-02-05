@@ -43,7 +43,7 @@ struct NCWin
 	* sy = start_y,          // смещение по Y от начала родительского окна
 	* sx = start_x           // смещение по X от начала родительского окна
 	*/
-	void derwin(WINDOW* pw, int ch, int cw, int sy, int sx)
+	void derwin(NCWin pw, int ch, int cw, int sy, int sx)
 	{
 		_p = isNull ? ncuiNotNull!(dc.derwin)(pw, ch, cw, sy, sx) : _p;
 	}
@@ -65,6 +65,8 @@ struct NCWin
 
 	void werase()
 	{
+		if (isNull) return;
+
 		ncuiNotErr!(dc.werase)(_p);
 	}
 
@@ -80,16 +82,22 @@ struct NCWin
 	*/
 	void copywin(WINDOW* sw, int ssy, int ssx, int dsy, int dsx, int dey, int dex)
 	{
+		if (isNull) return;
+
 		ncuiNotErr!(dc.copywin)(sw, _p, ssy, ssx, dsy, dsx, dey, dex, 0);
 	}
 
 	void copywin(NCWin sw, int ssy, int ssx, int dsy, int dsx, int dey, int dex)
 	{
+		if (isNull) return;
+
 		ncuiNotErr!(dc.copywin)(sw.ptr, _p, ssy, ssx, dsy, dsx, dey, dex, 0);
 	}
 
 	void wbkgd(int attr)
 	{
+		if (isNull) return;
+
 		ncuiNotErr!(dc.wbkgd)(_p, attr);
 	}
 
@@ -100,6 +108,8 @@ struct NCWin
 
 	void wattron(int attr)
 	{
+		if (isNull) return;
+
 		if (attr != 0)
 		{
 			ncuiNotErr!(dc.wattron)(_p, attr);
@@ -108,6 +118,8 @@ struct NCWin
 
 	void wattroff(int attr)
 	{
+		if (isNull) return;
+
 		if (attr != 0)
 		{
 			ncuiNotErr!(dc.wattroff)(_p, attr);
@@ -121,6 +133,8 @@ struct NCWin
 	*/
 	void wmove(int cpy, int cpx)
 	{
+		if (isNull) return;
+
 		ncuiNotErr!(dc.wmove)(_p, cpy, cpx);
 	}
 
@@ -133,6 +147,8 @@ struct NCWin
 	*/
 	void mvwaddnwstr(int cpy, int cpx, dstring ws)
 	{
+		if (isNull) return;
+
 		ncuiNotErr!(dc.mvwaddnwstr)(_p, cpy, cpx, ws.ptr, cast(int) ws.length);
 	}
 
@@ -143,6 +159,8 @@ struct NCWin
 	*/
 	void box(int vl, int hl)
 	{
+		if (isNull) return;
+
 		ncuiNotErr!(dc.box)(_p, vl, hl);
 	}
 }
