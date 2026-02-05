@@ -43,7 +43,18 @@ public:
 
 		import std.file : readText;
 
-		auto textview = new TextView(10, 2, 50, 6, readText("example/text"));
+		string text;
+
+		try
+		{
+			text = readText("example/text");
+		}
+		catch (Exception e)
+		{
+			warning(e.msg);
+		}
+
+		auto textview = new TextView(10, 2, 50, 6, text);
 
 		textview.append("Append text 1.");
 		textview.append("Append text 2.");
