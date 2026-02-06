@@ -20,9 +20,11 @@ private:
 	int _x;
 	int _width;
 	int _height;
-	// Устанавливаемый текст.
+	// Устанавливаемый текст (строки).
 	dstring[] _text;
 	bool _border;
+	// Флаг горизонтальной прокрутки.
+	bool _hscroll;
 	// Флаг инициализации формы.
 	bool _inited;
 
@@ -38,6 +40,7 @@ private:
 
 	// Позиция просмотра pad.
 	int _padTop;
+	int _padLeft;
 
 	// Чтобы не перерисовывать pad на каждом render().
 	bool _padDirty = true;
@@ -76,11 +79,52 @@ private:
 		return context.theme.attr(style);
 	}
 
-	// Использовать высоту pad равную количество установленных строк, иначе - высоту внутреннего окна.
+	// Использовать высоту pad равную количеству установленных строк, иначе - высоту внутреннего окна.
 	int padHeight()
 	{
 		const int h = (_text.length > 0) ? cast(int) _text.length : 1;
 		return (h < _innerH) ? _innerH : h;
+	}
+
+	// Ширина строки в "ячейках" терминала.
+	int lineWidthCells(dstring line)
+	{
+		int w = 0;
+		foreach (dchar ch; line)
+		{
+			w += cellWidth(ch);
+		}
+		return w;
+	}
+
+	// Максимальная ширина строки (в ячейках терминала).
+	int maxTextWidth()
+	{
+		// Минимум 1, чтобы pad был валиден.
+		int m = 1;
+
+		foreach (line; _text)
+		{
+			const int w = lineWidthCells(line);
+			if (w > m)
+			{
+				m = w;
+			}
+		}
+
+		return m;
+	}
+
+	// Ширина pad: либо ширина окна (без hscroll), либо по самой длинной строке.
+	int padWidth()
+	{
+		if (!_hscroll)
+		{
+			return _innerW;
+		}
+
+		const int m = maxTextWidth();
+		return (m < _innerW) ? _innerW : m;
 	}
 
 	// Создание pad.
@@ -102,7 +146,7 @@ private:
 
 		// Если pad существует — пересобрать с существующими изменениями (_padDirty == true).
 		_pad.delwin();
-		_pad.newpad(padHeight(), _innerW);
+		_pad.newpad(padHeight(), padWidth());
 		_pad.wbkgd(attr);
 		_pad.werase();
 		_pad.mvwaddnwstrs(_text, attr);
@@ -131,7 +175,7 @@ private:
 	void blitPadToWindow()
 	{
 		_window.werase();
-		_window.copywin(_pad, _padTop, 0, 0, 0, _innerH - 1, _innerW - 1);
+		_window.copywin(_pad, _padTop, _padLeft, 0, 0, _innerH - 1, _innerW - 1);
 	}
 
 	// Создание виджета.
@@ -140,6 +184,7 @@ private:
 		if (!_inited)
 		{
 			_padTop = 0;
+			_padLeft = 0;
 			ensureWindows(window);
 			_inited = true;
 		}
@@ -179,6 +224,17 @@ private:
 		return m > 0 ? m : 0;
 	}
 
+	int maxPadLeft()
+	{
+		if (!_hscroll)
+		{
+			return 0;
+		}
+
+		const int m = padWidth() - _innerW;
+		return m > 0 ? m : 0;
+	}
+
 	void clampPad()
 	{
 		if (_padTop < 0)
@@ -186,11 +242,23 @@ private:
 			_padTop = 0;
 		}
 
-		const int m = maxPadTop();
+		const int mt = maxPadTop();
 
-		if (_padTop > m)
+		if (_padTop > mt)
 		{
-			_padTop = m;
+			_padTop = mt;
+		}
+
+		if (_padLeft < 0)
+		{
+			_padLeft = 0;
+		}
+
+		const int ml = maxPadLeft();
+
+		if (_padLeft > ml)
+		{
+			_padLeft = ml;
 		}
 	}
 
@@ -207,6 +275,21 @@ private:
 		clampPad();
 
 		return _padTop != old;
+	}
+
+	bool scrollByCols(int delta)
+	{
+		if (!_hscroll || !_inited || _pad.isNull || delta == 0)
+		{
+			return false;
+		}
+
+		const int old = _padLeft;
+
+		_padLeft += delta;
+		clampPad();
+
+		return _padLeft != old;
 	}
 
 	int pageStep()
@@ -229,8 +312,33 @@ private:
 		return _padTop != old;
 	}
 
+	// Разбить текст на строки без переноса по ширине (для горизонтальной прокрутки).
+	dstring[] splitTextLines(string text)
+	{
+		import std.string : splitLines;
+		import std.utf : toUTF32;
+
+		auto parts = text.splitLines();
+		dstring[] output;
+
+		if (parts.length == 0)
+		{
+			return output;
+		}
+
+		output.length = parts.length;
+
+		foreach (i, line; parts)
+		{
+			output[i] = line.toUTF32();
+		}
+
+		return output;
+	}
+
 public:
-	this(int y, int x, int w, int h, string text = string.init, bool border = true, bool enabled = true)
+	this(int y, int x, int w, int h, string text = string.init, bool border = true, bool enabled = true,
+		bool hscroll = false)
 	{
 		if (border)
 		{
@@ -250,8 +358,19 @@ public:
 
 		_border = border;
 		_enabled = enabled;
+		_hscroll = hscroll;
 
-		_text = text.wrapWordsWide(innerWidth());
+		// Если включена горизонтальная прокрутка — строки не переносим.
+		// Иначе — переносим по ширине внутреннего окна.
+		if (_hscroll)
+		{
+			_text = splitTextLines(text);
+		}
+		else
+		{
+			_text = text.wrapWordsWide(innerWidth());
+		}
+
 		_padDirty = true;
 	}
 
@@ -267,7 +386,17 @@ public:
 
 	void append(string text)
 	{
-		auto more = text.wrapWordsWide(innerWidth());
+		dstring[] more;
+
+		if (_hscroll)
+		{
+			more = splitTextLines(text);
+		}
+		else
+		{
+			more = text.wrapWordsWide(innerWidth());
+		}
+
 		if (more.length == 0)
 		{
 			return;
@@ -289,6 +418,8 @@ public:
 		{
 			_padTop = maxPadTop();
 		}
+
+		clampPad();
 	}
 
 	override @property bool focusable()
@@ -316,7 +447,7 @@ public:
 
 		bool changed = false;
 
-		import deimos.ncurses : KEY_UP, KEY_DOWN, KEY_PPAGE, KEY_NPAGE, KEY_HOME, KEY_END;
+		import deimos.ncurses : KEY_UP, KEY_DOWN, KEY_PPAGE, KEY_NPAGE, KEY_HOME, KEY_END, KEY_LEFT, KEY_RIGHT;
 
 		switch (event.ch)
 		{
@@ -344,6 +475,14 @@ public:
 			changed = scrollTo(maxPadTop());
 			break;
 
+		case KEY_LEFT:
+			changed = scrollByCols(-1);
+			break;
+
+		case KEY_RIGHT:
+			changed = scrollByCols(+1);
+			break;
+
 		default:
 			break;
 		}
@@ -366,6 +505,7 @@ public:
 		_padDirty = true;
 		_lastTextAttr = int.min;
 		_padTop = 0;
+		_padLeft = 0;
 		_innerH = 0;
 		_innerW = 0;
 	}
