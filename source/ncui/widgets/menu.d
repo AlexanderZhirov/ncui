@@ -108,11 +108,13 @@ private:
 		_window.derwin(_windowBorder, innerH, innerW, offY, offX);
 		_window.syncok();
 
-		_items.length = _labels.length;
+		_items.length = _labels.length + 1;
 		foreach (index, label; _labels)
 		{
 			_items[index].newitem(label.name, label.description);
 		}
+
+		_items[$ - 1] = null;
 
 		_menu.newmenu(_items);
 

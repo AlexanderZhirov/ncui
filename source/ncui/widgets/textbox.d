@@ -57,7 +57,7 @@ private:
 
 	NCField _fieldLabel;
 	NCField _fieldInput;
-	NCField[2] _fields;
+	NCField[3] _fields;
 	NCForm _form;
 	NCWin _window;
 
@@ -160,6 +160,8 @@ private:
 			_fields[0] = _fieldInput;
 			_fields[1] = null;
 		}
+
+		_fields[2] = null;
 
 		// Отключение опции автоперехода к следующему полю при заполнении.
 		// Отключение статического режима поля — позволяет использовать горизонтальную прокрутку.
