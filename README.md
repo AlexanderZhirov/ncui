@@ -4,20 +4,20 @@
 [![code.dlang.org](https://img.shields.io/dub/v/ncui.svg)](http://code.dlang.org/packages/ncui)
 [![license](https://img.shields.io/github/license/AlexanderZhirov/ncui.svg?style=flat)](https://github.com/AlexanderZhirov/ncui/blob/master/LICENSE.txt)
 
-`ncui` — библиотека для построения TUI-приложений на D поверх **ncurses**.
+`ncui` is a library for building TUI (Text User Interface) applications in **D** on top of **ncurses**.
 
-Проект включает:
-- сессию ncurses с конфигурацией (`raw/cbreak`, `echo`, `keypad`, `cursor`, `ESC delay`)
-- движок со стеком экранов (`push/replace/pop/popTo/quit`)
-- два подхода к UI: `ScreenBase` (одно окно) и `WorkspaceScreen` (несколько окон)
-- базовые виджеты: `Button`, `Checkbox`, `TextBox`, `TextView`, `Menu`
-- единые проверки ошибок для вызовов ncurses / form / menu / panel
+The project includes:
+- ncurses session with configurable settings (`raw`/`cbreak`, `echo`, `keypad`, `cursor`, `ESC delay`)
+- screen stack engine (`push`/`replace`/`pop`/`popTo`/`quit`)
+- two UI approaches: `ScreenBase` (single window) and `WorkspaceScreen` (multiple windows)
+- basic widgets: `Button`, `Checkbox`, `TextBox`, `TextView`, `Menu`
+- unified error checking for ncurses / form / menu / panel calls
 
 ---
 
 ## DUB
 
-`dub.json` проекта:
+`dub.json` for your project:
 
 ```json
 {
@@ -29,18 +29,18 @@
 
 ---
 
-## Примеры
+## Examples
 
-В репозитории есть подпакет `example`:
+The repository contains an `example` subpackage:
 
 ```bash
 dub run :example
 ```
 
-[См. документацию](doc/).
+[See documentation](doc/).
 
 ---
 
-## Лицензия
+## License
 
 BSL-1.0
