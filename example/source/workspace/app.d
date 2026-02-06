@@ -15,9 +15,10 @@ private:
 	Checkbox _showPass;
 	Checkbox _enableOk;
 	Button _ok;
+	Menu _menu;
 
 public:
-	this()
+	this(HelpBody help)
 	{
 		_ui = new WidgetContainer();
 
@@ -45,11 +46,23 @@ public:
 			}
 		);
 
+		auto labels = [
+			MenuLabel("Статус", "Показать статус"),
+			MenuLabel("Справка", "Показать справку"),
+			MenuLabel("О программе", "Показать информацию"),
+		];
+
+		_menu = new Menu(9, 2, 24, 10, labels, (idx, label) {
+			help.setText(label);
+			return ScreenAction.none();
+		});
+
 		_ui.add(_name);
 		_ui.add(_pass);
 		_ui.add(_showPass);
 		_ui.add(_enableOk);
 		_ui.add(_ok);
+		_ui.add(_menu);
 	}
 
 	override void render(Window w, ScreenContext context, bool active)
@@ -84,10 +97,24 @@ public:
 	}
 }
 
-final class HelpBody : ViewBody
+final class HelpBody : ViewBody, ICursorOwner
 {
+private:
+	WidgetContainer _ui;
+	TextView _tv;
+
+public:
+	this()
+	{
+		_ui = new WidgetContainer();
+		_tv = new TextView(8, 2, 50, 10, "Выберите пункт меню слева.", true, true);
+		_ui.add(_tv);
+	}
+
 	override void render(Window w, ScreenContext context, bool active)
 	{
+		_ui.setActive(active);
+
 		const int borderAttr = context.theme.attr(active ? StyleId.BorderActive : StyleId.BorderInactive);
 		if (borderAttr != 0) wattron(w.handle(), borderAttr);
 		scope (exit) { if (borderAttr != 0) wattroff(w.handle(), borderAttr); }
@@ -100,6 +127,18 @@ final class HelpBody : ViewBody
 		w.put(y++, 2, "Tab                      -> switch widget (inside window)");
 		w.put(y++, 2, "q / Esc                  -> quit");
 		w.put(y++, 2, "OK button                -> returns Name:Password");
+
+		_ui.render(w, context);
+	}
+
+	void setText(string s)
+	{
+		_tv.append(s);
+	}
+
+	override void placeCursor(ScreenContext context)
+	{
+		_ui.applyCursor(context);
 	}
 
 	override ScreenAction handle(ScreenContext context, KeyEvent event)
@@ -109,12 +148,12 @@ final class HelpBody : ViewBody
 			return ScreenAction.push(new Simple());
 		}
 
-		return ScreenAction.none();
+		return _ui.handle(context, event);
 	}
 
 	override void close()
 	{
-
+		_ui.close();
 	}
 }
 
@@ -131,8 +170,11 @@ final class DemoScreen : WorkspaceScreen
 		auto leftWin  = new Window(H, leftW, 0, 0);
 		auto rightWin = new Window(H, rightW, 0, leftW);
 
-		auto formBody = new View(leftWin,  new FormBody());
-		auto helpBody = new View(rightWin, new HelpBody());
+		auto right = new HelpBody();
+		auto left  = new FormBody(right);
+
+		auto helpBody = new View(rightWin, right);
+		auto formBody = new View(leftWin,  left);
 
 		LocalTheme tFormBody = formBody.localTheme(context);
 		tFormBody.set(StyleId.WindowBackground, COLOR_CYAN, COLOR_YELLOW);
