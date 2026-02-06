@@ -9,22 +9,22 @@ private
 
 	extern (C) int wcwidth(wchar_t);
 
-	/**
-	 * Ширина символа в терминальных колонках (wide-aware через wcwidth).
-	 * Некорректные/управляющие/неопределимые символы считаются шириной 1,
-	 * чтобы перенос не зависал и не ломал расчёт.
-	 */
-	int cellWidth(dchar ch)
-	{
-		const width = wcwidth(cast(wchar_t) ch);
-		return (width > 0) ? width : 1;
-	}
-
 	// Минимальный набор разделителей для word-wrap.
 	bool isSpace(dchar ch)
 	{
 		return ch == ' ' || ch == '\t';
 	}
+}
+
+/**
+* Ширина символа в терминальных колонках (wide-aware через wcwidth).
+* Некорректные/управляющие/неопределимые символы считаются шириной 1,
+* чтобы перенос не зависал и не ломал расчёт.
+*/
+int cellWidth(dchar ch)
+{
+	const width = wcwidth(cast(wchar_t) ch);
+	return (width > 0) ? width : 1;
 }
 
 /**
