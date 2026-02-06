@@ -114,9 +114,9 @@ struct SessionConfig
 	/// Режим ввода терминала. По умолчанию `raw` (посимвольный ввод без обработки).
 	InputMode mode = InputMode.raw;
 	/// Режим курсора. По умолчанию виден (`normal`).
-	Cursor cursor = Cursor.normal;
+	Cursor cursor = Cursor.hidden;
 	/// Эхо ввода. По умолчанию отображает вводимые символы (`on`).
-	Echo echo = Echo.on;
+	Echo echo = Echo.off;
 	/// Обработка специальных клавиш (стрелки, Home/End, PgUp/PgDn, F1..F12 → `KEY_*`).
 	Keypad keypad = Keypad.on;
 	/// Задержка распознавания ESC/escape-последовательностей в миллисекундах.
