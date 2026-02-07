@@ -149,7 +149,7 @@ private:
 		_pad.newpad(padHeight(), padWidth());
 		_pad.wbkgd(attr);
 		_pad.werase();
-		_pad.mvwaddnwstrs(_text, attr);
+		_pad.mvwaddnwstrsattr(_text, attr);
 
 		_lastTextAttr = attr;
 		_padDirty = false;
@@ -287,6 +287,21 @@ private:
 		const int old = _padLeft;
 
 		_padLeft += delta;
+		clampPad();
+
+		return _padLeft != old;
+	}
+
+	bool scrollToCols(int left)
+	{
+		if (!_hscroll || !_inited || _pad.isNull)
+		{
+			return false;
+		}
+
+		const int old = _padLeft;
+
+		_padLeft = left;
 		clampPad();
 
 		return _padLeft != old;
@@ -447,7 +462,8 @@ public:
 
 		bool changed = false;
 
-		import deimos.ncurses : KEY_UP, KEY_DOWN, KEY_PPAGE, KEY_NPAGE, KEY_HOME, KEY_END, KEY_LEFT, KEY_RIGHT;
+		import deimos.ncurses : KEY_UP, KEY_DOWN, KEY_PPAGE, KEY_NPAGE, KEY_HOME,
+								KEY_END, KEY_LEFT, KEY_RIGHT, KEY_SHOME, KEY_SEND;
 
 		switch (event.ch)
 		{
@@ -481,6 +497,14 @@ public:
 
 		case KEY_RIGHT:
 			changed = scrollByCols(+1);
+			break;
+		
+		case KEY_SHOME:
+			changed = scrollToCols(0);
+			break;
+
+		case KEY_SEND:
+			changed = scrollToCols(maxPadLeft());
 			break;
 
 		default:
