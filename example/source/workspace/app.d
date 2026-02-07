@@ -160,9 +160,9 @@ public:
 
 		int y = 2;
 		w.put(y++, 2, "Shift+Left / Shift+Right  -> switch window");
-		w.put(y++, 2, "Tab                      -> switch widget (inside window)");
-		w.put(y++, 2, "q / Esc                  -> quit");
-		w.put(y++, 2, "OK button                -> returns Name:Password");
+		w.put(y++, 2, "Tab                       -> switch widget (inside window)");
+		w.put(y++, 2, "q / Esc                   -> quit");
+		w.put(y++, 2, "OK button                 -> returns Name:Password");
 
 		_ui.render(w, context);
 	}
@@ -218,9 +218,9 @@ final class DemoScreen : WorkspaceScreen
 		tFormBody.set(StyleId.WindowBorderInactive, COLOR_BLACK, COLOR_YELLOW);
 		tFormBody.set(StyleId.BorderActive, COLOR_BLUE, COLOR_YELLOW);
 		tFormBody.set(StyleId.BorderInactive, COLOR_BLACK, COLOR_YELLOW);
-		tFormBody.set(StyleId.Title, COLOR_BLACK, COLOR_YELLOW, A_BOLD);
+		tFormBody.set(StyleId.Title, COLOR_WHITE, COLOR_YELLOW, 0);
 		tFormBody.set(StyleId.ListBoxItem, COLOR_BLACK, COLOR_YELLOW, 0);
-		tFormBody.set(StyleId.ListBoxItemActive, COLOR_BLACK, COLOR_BLUE, A_BOLD);
+		tFormBody.set(StyleId.ListBoxItemActive, COLOR_WHITE, COLOR_BLUE, 0);
 		tFormBody.set(StyleId.ListBoxItemInactive, COLOR_BLACK, COLOR_YELLOW, A_DIM);
 		tFormBody.set(StyleId.ListBoxItemSelect, COLOR_BLACK, COLOR_WHITE, 0);
 		tFormBody.set(StyleId.Button, COLOR_BLACK, COLOR_YELLOW);
@@ -229,10 +229,11 @@ final class DemoScreen : WorkspaceScreen
 		tFormBody.set(StyleId.Checkbox, COLOR_BLACK, COLOR_YELLOW);
 		tFormBody.set(StyleId.CheckboxActive, COLOR_WHITE, COLOR_BLUE, A_BOLD);
 		tFormBody.set(StyleId.CheckboxInactive, COLOR_BLACK, COLOR_YELLOW, A_DIM);
+		tFormBody.set(StyleId.CheckboxLabel, COLOR_BLACK, COLOR_YELLOW);
 		tFormBody.set(StyleId.MenuItem, COLOR_BLACK, COLOR_YELLOW);
 		tFormBody.set(StyleId.MenuItemActive, COLOR_WHITE, COLOR_BLUE, A_BOLD);
 		tFormBody.set(StyleId.MenuItemInactive, COLOR_BLACK, COLOR_YELLOW, A_DIM);
-		tFormBody.set(StyleId.TextBoxInput, COLOR_BLACK, COLOR_YELLOW, A_UNDERLINE);
+		tFormBody.set(StyleId.TextBoxInput, COLOR_BLACK, COLOR_WHITE, A_UNDERLINE);
 		tFormBody.set(StyleId.TextBoxInputActive, COLOR_WHITE, COLOR_BLUE, A_BOLD | A_UNDERLINE);
 		tFormBody.set(StyleId.TextBoxInputInactive, COLOR_BLUE, COLOR_YELLOW, A_DIM | A_UNDERLINE);
 		tFormBody.set(StyleId.TextBoxLabel, COLOR_BLACK, COLOR_YELLOW);
