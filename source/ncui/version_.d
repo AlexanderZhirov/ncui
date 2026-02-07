@@ -1,3 +1,3 @@
 module ncui.version_;
 
-enum ncuiVersion = "0.1.0-alpha.4";
+enum ncuiVersion = "0.1.0-alpha.5";

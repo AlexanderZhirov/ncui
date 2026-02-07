@@ -22,7 +22,7 @@ The project includes:
 ```json
 {
 	"dependencies": {
-		"ncui": "~>0.1.0-alpha.4"
+		"ncui": "~>0.1.0-alpha.5"
 	}
 }
 ```
