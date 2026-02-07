@@ -11,6 +11,8 @@ enum StyleId
 {
 	// Фон окон.
 	WindowBackground,
+	WindowBorderActive,
+	WindowBorderInactive,
 	// Обычный текст интерфейса.
 	Text,
 	// Вторичный/приглушённый текст.
@@ -54,6 +56,11 @@ enum StyleId
 	MenuItem,
 	MenuItemActive,
 	MenuItemInactive,
+
+	ListBoxItem,
+	ListBoxItemActive,
+	ListBoxItemInactive,
+	ListBoxItemSelect,
 }
 
 /**
@@ -65,34 +72,42 @@ enum PairSlot : short
 	Normal = 1,
 	Muted = 2,
 	Accent = 3,
+	// Границы окна
+	WindowBorderActive = 4,
+	WindowBorderInactive = 5,
 	// Границы.
-	BorderActive = 4,
-	BorderInactive = 5,
+	BorderActive = 6,
+	BorderInactive = 7,
 	// Ошибки
-	Error = 6,
+	Error = 8,
 	// Кнопки.
-	Button = 7,
-	ButtonActive = 8,
-	ButtonInactive = 9,
+	Button = 9,
+	ButtonActive = 10,
+	ButtonInactive = 11,
 	// Флажок.
-	Checkbox = 10,
-	CheckboxActive = 11,
-	CheckboxInactive = 12,
+	Checkbox = 12,
+	CheckboxActive = 13,
+	CheckboxInactive = 14,
 	// Метка текстового поля.
-	TextBoxLabel = 13,
-	TextBoxLabelInactive = 14,
+	TextBoxLabel = 15,
+	TextBoxLabelInactive = 16,
 	// Текстовое поле.
-	TextBoxInput = 15,
-	TextBoxInputActive = 16,
-	TextBoxInputInactive = 17,
+	TextBoxInput = 17,
+	TextBoxInputActive = 18,
+	TextBoxInputInactive = 19,
 	// Поле просмотра текста.
-	TextView = 18,
-	TextViewActive = 19,
-	TextViewInactive = 20,
-	// Пункт меню.
-	MenuItem = 21,
-	MenuItemActive = 22,
-	MenuItemInactive = 23,
+	TextView = 20,
+	TextViewActive = 21,
+	TextViewInactive = 22,
+	// Элемент меню.
+	MenuItem = 23,
+	MenuItemActive = 24,
+	MenuItemInactive = 25,
+	// Элемент списка.
+	ListBoxItem = 26,
+	ListBoxItemActive = 27,
+	ListBoxItemInactive = 28,
+	ListBoxItemSelect = 29,
 }
 
 /**
@@ -349,6 +364,9 @@ final class DefaultTheme : ITheme
 		newPair(PairSlot.Muted, COLOR_CYAN, -1);
 		newPair(PairSlot.Accent, COLOR_CYAN, -1);
 
+		newPair(PairSlot.WindowBorderActive, COLOR_CYAN, -1);
+		newPair(PairSlot.WindowBorderInactive, COLOR_WHITE, -1);
+
 		newPair(PairSlot.BorderActive, COLOR_CYAN, -1);
 		newPair(PairSlot.BorderInactive, COLOR_WHITE, -1);
 
@@ -376,6 +394,11 @@ final class DefaultTheme : ITheme
 		newPair(PairSlot.MenuItem, COLOR_WHITE, -1);
 		newPair(PairSlot.MenuItemActive, COLOR_BLACK, COLOR_CYAN);
 		newPair(PairSlot.MenuItemInactive, COLOR_WHITE, -1);
+
+		newPair(PairSlot.ListBoxItem, COLOR_WHITE, -1);
+		newPair(PairSlot.ListBoxItemActive, COLOR_BLACK, COLOR_CYAN);
+		newPair(PairSlot.ListBoxItemInactive, COLOR_WHITE, -1);
+		newPair(PairSlot.ListBoxItemSelect, COLOR_BLACK, COLOR_YELLOW);
 	}
 
 	override Style style(StyleId id)
@@ -393,6 +416,12 @@ final class DefaultTheme : ITheme
 			return Style(PairSlot.Muted, 0);
 		case StyleId.Title:
 			return Style(PairSlot.Accent, A_BOLD);
+
+			// Рамки окна.
+		case StyleId.WindowBorderActive:
+			return Style(PairSlot.WindowBorderActive, A_BOLD);
+		case StyleId.WindowBorderInactive:
+			return Style(PairSlot.WindowBorderInactive, 0);
 
 			// Рамки.
 		case StyleId.BorderActive:
@@ -444,13 +473,23 @@ final class DefaultTheme : ITheme
 		case StyleId.TextViewInactive:
 			return Style(PairSlot.TextViewInactive, A_DIM);
 
-			// Пункт меню.
+			// Элемент меню.
 		case StyleId.MenuItem:
 			return Style(PairSlot.MenuItem, 0);
 		case StyleId.MenuItemActive:
 			return Style(PairSlot.MenuItemActive, A_BOLD);
 		case StyleId.MenuItemInactive:
 			return Style(PairSlot.MenuItemInactive, A_DIM);
+		
+			// Элемент списка.
+		case StyleId.ListBoxItem:
+			return Style(PairSlot.ListBoxItem, 0);
+		case StyleId.ListBoxItemActive:
+			return Style(PairSlot.ListBoxItemActive, A_BOLD);
+		case StyleId.ListBoxItemInactive:
+			return Style(PairSlot.ListBoxItemInactive, A_DIM);
+		case StyleId.ListBoxItemSelect:
+			return Style(PairSlot.ListBoxItemSelect, 0);
 		}
 	}
 }
@@ -462,6 +501,9 @@ final class DarkTheme : ITheme
 		newPair(PairSlot.Normal, COLOR_WHITE, COLOR_BLACK);
 		newPair(PairSlot.Muted, COLOR_CYAN, COLOR_BLACK);
 		newPair(PairSlot.Accent, COLOR_YELLOW, COLOR_BLACK);
+
+		newPair(PairSlot.WindowBorderActive, COLOR_CYAN, COLOR_BLACK);
+		newPair(PairSlot.WindowBorderInactive, COLOR_BLUE, COLOR_BLACK);
 
 		newPair(PairSlot.BorderActive, COLOR_CYAN, COLOR_BLACK);
 		newPair(PairSlot.BorderInactive, COLOR_BLUE, COLOR_BLACK);
@@ -490,6 +532,11 @@ final class DarkTheme : ITheme
 		newPair(PairSlot.MenuItem, COLOR_WHITE, COLOR_BLACK);
 		newPair(PairSlot.MenuItemActive, COLOR_BLACK, COLOR_CYAN);
 		newPair(PairSlot.MenuItemInactive, COLOR_WHITE, COLOR_BLACK);
+
+		newPair(PairSlot.ListBoxItem, COLOR_WHITE, COLOR_BLACK);
+		newPair(PairSlot.ListBoxItemActive, COLOR_BLACK, COLOR_CYAN);
+		newPair(PairSlot.ListBoxItemInactive, COLOR_WHITE, COLOR_BLACK);
+		newPair(PairSlot.ListBoxItemSelect, COLOR_BLACK, COLOR_YELLOW);
 	}
 
 	override Style style(StyleId id)
@@ -507,6 +554,12 @@ final class DarkTheme : ITheme
 			return Style(PairSlot.Muted, 0);
 		case StyleId.Title:
 			return Style(PairSlot.Accent, A_BOLD);
+
+			// Рамки окна.
+		case StyleId.WindowBorderActive:
+			return Style(PairSlot.WindowBorderActive, A_BOLD);
+		case StyleId.WindowBorderInactive:
+			return Style(PairSlot.WindowBorderInactive, 0);
 
 			// Рамки.
 		case StyleId.BorderActive:
@@ -558,13 +611,23 @@ final class DarkTheme : ITheme
 		case StyleId.TextViewInactive:
 			return Style(PairSlot.TextViewInactive, A_DIM);
 
-			// Пункт меню.
+			// Элемент меню.
 		case StyleId.MenuItem:
 			return Style(PairSlot.MenuItem, 0);
 		case StyleId.MenuItemActive:
 			return Style(PairSlot.MenuItemActive, A_BOLD);
 		case StyleId.MenuItemInactive:
 			return Style(PairSlot.MenuItemInactive, A_DIM);
+
+			// Элемент списка.
+		case StyleId.ListBoxItem:
+			return Style(PairSlot.ListBoxItem, 0);
+		case StyleId.ListBoxItemActive:
+			return Style(PairSlot.ListBoxItemActive, A_BOLD);
+		case StyleId.ListBoxItemInactive:
+			return Style(PairSlot.ListBoxItemInactive, A_DIM);
+		case StyleId.ListBoxItemSelect:
+			return Style(PairSlot.ListBoxItemSelect, 0);
 		}
 	}
 }
@@ -576,6 +639,9 @@ final class LightTheme : ITheme
 		newPair(PairSlot.Normal, COLOR_BLACK, COLOR_WHITE);
 		newPair(PairSlot.Muted, COLOR_BLUE, COLOR_WHITE);
 		newPair(PairSlot.Accent, COLOR_BLUE, COLOR_WHITE);
+
+		newPair(PairSlot.WindowBorderActive, COLOR_BLUE, COLOR_WHITE);
+		newPair(PairSlot.WindowBorderInactive, COLOR_BLACK, COLOR_WHITE);
 
 		newPair(PairSlot.BorderActive, COLOR_BLUE, COLOR_WHITE);
 		newPair(PairSlot.BorderInactive, COLOR_BLACK, COLOR_WHITE);
@@ -604,6 +670,11 @@ final class LightTheme : ITheme
 		newPair(PairSlot.MenuItem, COLOR_BLACK, COLOR_WHITE);
 		newPair(PairSlot.MenuItemActive, COLOR_WHITE, COLOR_BLUE);
 		newPair(PairSlot.MenuItemInactive, COLOR_BLUE, COLOR_WHITE);
+
+		newPair(PairSlot.ListBoxItem, COLOR_BLACK, COLOR_WHITE);
+		newPair(PairSlot.ListBoxItemActive, COLOR_WHITE, COLOR_BLUE);
+		newPair(PairSlot.ListBoxItemInactive, COLOR_BLUE, COLOR_WHITE);
+		newPair(PairSlot.ListBoxItemSelect, COLOR_BLACK, COLOR_YELLOW);
 	}
 
 	override Style style(StyleId id)
@@ -621,6 +692,12 @@ final class LightTheme : ITheme
 			return Style(PairSlot.Muted, 0);
 		case StyleId.Title:
 			return Style(PairSlot.Accent, A_BOLD);
+
+			// Рамки окна.
+		case StyleId.WindowBorderActive:
+			return Style(PairSlot.WindowBorderActive, A_BOLD);
+		case StyleId.WindowBorderInactive:
+			return Style(PairSlot.WindowBorderInactive, 0);
 
 			// Рамки.
 		case StyleId.BorderActive:
@@ -672,13 +749,23 @@ final class LightTheme : ITheme
 		case StyleId.TextViewInactive:
 			return Style(PairSlot.TextViewInactive, A_DIM);
 
-			// Пункт меню.
+			// Элемент меню.
 		case StyleId.MenuItem:
 			return Style(PairSlot.MenuItem, 0);
 		case StyleId.MenuItemActive:
 			return Style(PairSlot.MenuItemActive, A_BOLD);
 		case StyleId.MenuItemInactive:
 			return Style(PairSlot.MenuItemInactive, A_DIM);
+
+			// Элемент списка.
+		case StyleId.ListBoxItem:
+			return Style(PairSlot.ListBoxItem, 0);
+		case StyleId.ListBoxItemActive:
+			return Style(PairSlot.ListBoxItemActive, A_BOLD);
+		case StyleId.ListBoxItemInactive:
+			return Style(PairSlot.ListBoxItemInactive, A_DIM);
+		case StyleId.ListBoxItemSelect:
+			return Style(PairSlot.ListBoxItemSelect, 0);
 		}
 	}
 }
