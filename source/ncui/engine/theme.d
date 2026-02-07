@@ -41,6 +41,7 @@ enum StyleId
 	CheckboxActive,
 	// Флажок выключенный (disabled).
 	CheckboxInactive,
+	CheckboxLabel,
 
 	TextBoxLabel,
 	TextBoxLabelInactive,
@@ -88,26 +89,27 @@ enum PairSlot : short
 	Checkbox = 12,
 	CheckboxActive = 13,
 	CheckboxInactive = 14,
+	CheckboxLabel = 15,
 	// Метка текстового поля.
-	TextBoxLabel = 15,
-	TextBoxLabelInactive = 16,
+	TextBoxLabel = 16,
+	TextBoxLabelInactive = 17,
 	// Текстовое поле.
-	TextBoxInput = 17,
-	TextBoxInputActive = 18,
-	TextBoxInputInactive = 19,
+	TextBoxInput = 18,
+	TextBoxInputActive = 19,
+	TextBoxInputInactive = 20,
 	// Поле просмотра текста.
-	TextView = 20,
-	TextViewActive = 21,
-	TextViewInactive = 22,
+	TextView = 21,
+	TextViewActive = 22,
+	TextViewInactive = 23,
 	// Элемент меню.
-	MenuItem = 23,
-	MenuItemActive = 24,
-	MenuItemInactive = 25,
+	MenuItem = 24,
+	MenuItemActive = 25,
+	MenuItemInactive = 26,
 	// Элемент списка.
-	ListBoxItem = 26,
-	ListBoxItemActive = 27,
-	ListBoxItemInactive = 28,
-	ListBoxItemSelect = 29,
+	ListBoxItem = 27,
+	ListBoxItemActive = 28,
+	ListBoxItemInactive = 29,
+	ListBoxItemSelect = 30,
 }
 
 /**
@@ -379,6 +381,7 @@ final class DefaultTheme : ITheme
 		newPair(PairSlot.Checkbox, COLOR_WHITE, -1);
 		newPair(PairSlot.CheckboxActive, COLOR_BLACK, COLOR_CYAN);
 		newPair(PairSlot.CheckboxInactive, COLOR_WHITE, -1);
+		newPair(PairSlot.CheckboxLabel, COLOR_WHITE, -1);
 
 		newPair(PairSlot.TextBoxLabel, COLOR_WHITE, -1);
 		newPair(PairSlot.TextBoxLabelInactive, COLOR_CYAN, -1);
@@ -450,6 +453,8 @@ final class DefaultTheme : ITheme
 			return Style(PairSlot.CheckboxActive, A_BOLD);
 		case StyleId.CheckboxInactive:
 			return Style(PairSlot.CheckboxInactive, A_DIM);
+		case StyleId.CheckboxLabel:
+			return Style(PairSlot.CheckboxLabel, 0);
 
 			// Метка текстового поля.
 		case StyleId.TextBoxLabel:
@@ -517,6 +522,7 @@ final class DarkTheme : ITheme
 		newPair(PairSlot.Checkbox, COLOR_WHITE, COLOR_BLACK);
 		newPair(PairSlot.CheckboxActive, COLOR_BLACK, COLOR_CYAN);
 		newPair(PairSlot.CheckboxInactive, COLOR_WHITE, COLOR_BLACK);
+		newPair(PairSlot.CheckboxLabel, COLOR_WHITE, COLOR_BLACK);
 
 		newPair(PairSlot.TextBoxLabel, COLOR_WHITE, COLOR_BLACK);
 		newPair(PairSlot.TextBoxLabelInactive, COLOR_CYAN, COLOR_BLACK);
@@ -588,6 +594,8 @@ final class DarkTheme : ITheme
 			return Style(PairSlot.CheckboxActive, A_BOLD);
 		case StyleId.CheckboxInactive:
 			return Style(PairSlot.CheckboxInactive, A_DIM);
+		case StyleId.CheckboxLabel:
+			return Style(PairSlot.CheckboxLabel, 0);
 
 			// Метка текстового поля.
 		case StyleId.TextBoxLabel:
@@ -655,6 +663,7 @@ final class LightTheme : ITheme
 		newPair(PairSlot.Checkbox, COLOR_BLACK, COLOR_WHITE);
 		newPair(PairSlot.CheckboxActive, COLOR_WHITE, COLOR_BLUE);
 		newPair(PairSlot.CheckboxInactive, COLOR_BLUE, COLOR_WHITE);
+		newPair(PairSlot.CheckboxLabel, COLOR_BLACK, COLOR_WHITE);
 
 		newPair(PairSlot.TextBoxLabel, COLOR_BLACK, COLOR_WHITE);
 		newPair(PairSlot.TextBoxLabelInactive, COLOR_BLUE, COLOR_WHITE);
@@ -726,6 +735,8 @@ final class LightTheme : ITheme
 			return Style(PairSlot.CheckboxActive, A_BOLD);
 		case StyleId.CheckboxInactive:
 			return Style(PairSlot.CheckboxInactive, A_DIM);
+		case StyleId.CheckboxLabel:
+			return Style(PairSlot.CheckboxLabel, 0);
 
 			// Метка текстового поля.
 		case StyleId.TextBoxLabel:

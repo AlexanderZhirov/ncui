@@ -101,7 +101,7 @@ public:
 		const string decor = "[" ~ mark ~ "]";
 
 		window.putAttr(_y, _x, decor, context.theme.attr(sid));
-		window.put(_y, _x + 4, _label);
+		window.putAttr(_y, _x + 4, _label, context.theme.attr(StyleId.CheckboxLabel));
 	}
 
 	@property int width()
