@@ -76,14 +76,9 @@ struct NCWin
 	* dey = destination_end_y,      // конечная строка в цели
 	* dex = destination_end_x,      // конечный столбец в цели
 	*/
-	void copywin(WINDOW* sw, int ssy, int ssx, int dsy, int dsx, int dey, int dex)
-	{
-		ncuiNotErr!(dc.copywin)(sw, _p, ssy, ssx, dsy, dsx, dey, dex, 0);
-	}
-
 	void copywin(NCWin sw, int ssy, int ssx, int dsy, int dsx, int dey, int dex)
 	{
-		ncuiNotErr!(dc.copywin)(sw.ptr, _p, ssy, ssx, dsy, dsx, dey, dex, 0);
+		ncuiNotErr!(dc.copywin)(sw, _p, ssy, ssx, dsy, dsx, dey, dex, 0);
 	}
 
 	void wbkgd(int attr)
