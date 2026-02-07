@@ -27,6 +27,57 @@ int cellWidth(dchar ch)
 	return (width > 0) ? width : 1;
 }
 
+// Посчитать ширину строки (UTF-32) в терминальных «колонках» (cells).
+int widthCells(dstring s)
+{
+	int sum = 0;
+	foreach (ch; s) sum += cellWidth(ch);
+	return sum;
+}
+
+// Вырезать подстроку по «колонкам» (cells): начиная со startCell и шириной maxCells.
+dstring sliceByCells(dstring s, int startCell, int maxCells)
+{
+	if (maxCells <= 0 || s.length == 0)
+	{
+		return dstring.init;
+	}
+
+	int start = startCell;
+	if (start < 0) start = 0;
+
+	int consumed = 0;
+	size_t i = 0;
+
+	while (i < s.length && consumed < start)
+	{
+		consumed += cellWidth(s[i]);
+		++i;
+	}
+
+	if (i >= s.length)
+	{
+		return dstring.init;
+	}
+
+	int outCells = 0;
+	size_t j = i;
+	while (j < s.length)
+	{
+		const w = cellWidth(s[j]);
+
+		if (outCells + w > maxCells)
+		{
+			break;
+		}
+
+		outCells += w;
+		++j;
+	}
+
+	return s[i .. j];
+}
+
 /**
  * Выполняет перенос текста по словам (word-wrap) с учётом ширины wide/Unicode-символов
  * в терминальных колонках (cells).
