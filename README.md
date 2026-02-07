@@ -10,7 +10,7 @@ The project includes:
 - ncurses session with configurable settings (`raw`/`cbreak`, `echo`, `keypad`, `cursor`, `ESC delay`)
 - screen stack engine (`push`/`replace`/`pop`/`popTo`/`quit`)
 - two UI approaches: `ScreenBase` (single window) and `WorkspaceScreen` (multiple windows)
-- basic widgets: `Button`, `Checkbox`, `TextBox`, `TextView`, `Menu`
+- basic widgets: `Button`, `Checkbox`, `TextBox`, `ListBox`, `TextView`, `Menu`
 - unified error checking for ncurses / form / menu / panel calls
 
 ---

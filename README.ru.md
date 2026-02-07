@@ -10,7 +10,7 @@
 - сессию ncurses с конфигурацией (`raw/cbreak`, `echo`, `keypad`, `cursor`, `ESC delay`)
 - движок со стеком экранов (`push/replace/pop/popTo/quit`)
 - два подхода к UI: `ScreenBase` (одно окно) и `WorkspaceScreen` (несколько окон)
-- базовые виджеты: `Button`, `Checkbox`, `TextBox`, `TextView`, `Menu`
+- базовые виджеты: `Button`, `Checkbox`, `TextBox`, `ListBox`, `TextView`, `Menu`
 - единые проверки ошибок для вызовов ncurses / form / menu / panel
 
 ---
