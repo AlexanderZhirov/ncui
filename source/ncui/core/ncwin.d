@@ -141,7 +141,7 @@ struct NCWin
 		ncuiNotErr!(dc.mvwaddnwstr)(_p, cpy, cpx, ws.ptr, cast(int) ws.length);
 	}
 
-	void mvwaddnwstrs(dstring[] text, int attr)
+	void mvwaddnwstrsattr(dstring[] text, int attr)
 	{
 		wattron(attr);
 		foreach (i, line; text)
@@ -155,6 +155,16 @@ struct NCWin
 			mvwaddnwstr(cast(int) i, 0, line);
 		}
 		wattroff(attr);
+	}
+	/**
+	* cpy = cursor_position_y,   // координата Y для курсора
+	* cpx = cursor_position_x,   // координата X для курсора
+	* lc = line_character,       // символ, из которого строится линия
+	* ll = line_length           // длина линии
+	*/
+	void mvwhline(int cpy, int cpx, int attr, int ll)
+	{
+		ncuiNotErr!(dc.mvwhline)(_p, cpy, cpx, (cast(chtype) ' ') | cast(chtype) attr, ll);
 	}
 
 	/**
